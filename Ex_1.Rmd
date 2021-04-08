@@ -7,9 +7,6 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
-```{r}
-plot(cars)
-```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
@@ -17,8 +14,37 @@ When you save the notebook, an HTML file containing the code and output will be 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
+First of all, we need to read all the files.
+
 ```{r}
+setwd("C:/Users/tamir.salem/econiv_ex1")
 library(readr)
-AXP <- read_csv('Data/AXP.txt')
+AXP <- read_csv('Data/AXP.txt', col_types =  c(D,c,d,d,d,d,d))
+CAT <- read_csv('Data/CAT.txt')
+CSCO <- read_csv('Data/CSCO.txt')
+CVX <- read_csv('Data/CVX.txt')
+DD <- read_csv('Data/DD.txt')
+GE <- read_csv('Data/GE.txt')
+GS <- read_csv('Data/GS.txt')
+HD <- read_csv('Data/HD.txt')
+IBM <- read_csv('Data/IBM.txt')
+JNJ <- read_csv('Data/JNJ.txt')
+JPM <- read.csv('Data/JPM.txt')
+KO <- read.csv('Data/KO.txt')
+MCD <- read.csv('Data/MCD.txt')
+MMM <- read.csv('Data/MMM.txt')
+MSFT <- read.csv('Data/MSFT.txt')
+PFE <- read.csv('Data/PFE.txt')
+SPY <- read.csv('Data/SPY.txt')
+TRV <- read.csv('Data/TRV.txt')
+UTX <- read.csv('Data/UTX.txt')
+V <- read.csv('Data/V.txt')
+WMT <- read.csv('Data/WMT.txt')
+XOM <- read.csv('Data/XOM.txt')
+```
+
+OK, so now we have these files, which are TOO BIG. Let's first clean the data to get it from 2000 onwards.
+```{r}
+function clean_data{}
 ```
 
