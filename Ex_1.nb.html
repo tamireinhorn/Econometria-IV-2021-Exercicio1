@@ -223,33 +223,95 @@ pre code {
 <p>First of all, we need to read all the files.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0d2QoXCJDOi9Vc2Vycy90YW1pci5zYWxlbS9lY29uaXZfZXgxXCIpXG5cbmBgYCJ9 -->
-<pre class="r"><code>setwd(&quot;C:/Users/tamir.salem/econiv_ex1&quot;)
-</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiVGhlIHdvcmtpbmcgZGlyZWN0b3J5IHdhcyBjaGFuZ2VkIHRvIEM6L1VzZXJzL3RhbWlyLnNhbGVtL2Vjb25pdl9leDEgaW5zaWRlIGEgbm90ZWJvb2sgY2h1bmsuIFRoZSB3b3JraW5nIGRpcmVjdG9yeSB3aWxsIGJlIHJlc2V0IHdoZW4gdGhlIGNodW5rIGlzIGZpbmlzaGVkIHJ1bm5pbmcuIFVzZSB0aGUga25pdHIgcm9vdC5kaXIgb3B0aW9uIGluIHRoZSBzZXR1cCBjaHVuayB0byBjaGFuZ2UgdGhlIHdvcmtpbmcgZGlyZWN0b3J5IGZvciBub3RlYm9vayBjaHVua3MuXG4ifQ== -->
-<pre><code>The working directory was changed to C:/Users/tamir.salem/econiv_ex1 inside a notebook chunk. The working directory will be reset when the chunk is finished running. Use the knitr root.dir option in the setup chunk to change the working directory for notebook chunks.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbkFYUCA8LSByZWFkX2NzdignRGF0YS9BWFAudHh0JywgY29sX3R5cGVzID0gIGMoRCxjLGQsZCxkLGQsZCkpXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkoZHBseXIpXG5gYGAifQ== -->
 <pre class="r"><code>library(readr)
-AXP &lt;- read_csv(&#39;Data/AXP.txt&#39;, col_types =  c(D,c,d,d,d,d,d))</code></pre>
+library(dplyr)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYXMuY29sX3NwZWMoY29sX3R5cGVzKSA6IG9iamV0byAnZCcgbsOjbyBlbmNvbnRyYWRvXG4ifQ== -->
-<pre><code>Error in as.col_spec(col_types) : objeto &#39;d&#39; não encontrado</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiXG5BdHRhY2hpbmcgcGFja2FnZTog46S847ixZHBseXLjpLzjuLJcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDjpLzjuLFwYWNrYWdlOnN0YXRz46S847iyOlxuXG4gICAgZmlsdGVyLCBsYWdcblxuVGhlIGZvbGxvd2luZyBvYmplY3RzIGFyZSBtYXNrZWQgZnJvbSDjpLzjuLFwYWNrYWdlOmJhc2XjpLzjuLI6XG5cbiAgICBpbnRlcnNlY3QsIHNldGRpZmYsIHNldGVxdWFsLCB1bmlvblxuIn0= -->
+<pre><code>
+Attaching package: 㤼㸱dplyr㤼㸲
+
+The following objects are masked from 㤼㸱package:stats㤼㸲:
+
+    filter, lag
+
+The following objects are masked from 㤼㸱package:base㤼㸲:
+
+    intersect, setdiff, setequal, union</code></pre>
 <!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQVhQIDwtIHJlYWRfY3N2KCdEYXRhL0FYUC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5DQVQgPC0gcmVhZF9jc3YoJ0RhdGEvQ0FULnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbkNTQ08gPC0gcmVhZF9jc3YoJ0RhdGEvQ1NDTy50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5DVlggPC0gcmVhZF9jc3YoJ0RhdGEvQ1ZYLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbkREIDwtIHJlYWRfY3N2KCdEYXRhL0RELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbkdFIDwtIHJlYWRfY3N2KCdEYXRhL0dFLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbkdTIDwtIHJlYWRfY3N2KCdEYXRhL0dTLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbkhEIDwtIHJlYWRfY3N2KCdEYXRhL0hELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbklCTSA8LSByZWFkX2NzdignRGF0YS9JQk0udHh0JywgY29sX3R5cGVzID0gY29scygpKVxuSk5KIDwtIHJlYWRfY3N2KCdEYXRhL0pOSi50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5KUE0gPC0gcmVhZF9jc3YoJ0RhdGEvSlBNLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbktPIDwtIHJlYWRfY3N2KCdEYXRhL0tPLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbk1DRCA8LSByZWFkX2NzdignRGF0YS9NQ0QudHh0JywgY29sX3R5cGVzID0gY29scygpKVxuTU1NIDwtIHJlYWRfY3N2KCdEYXRhL01NTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5NU0ZUIDwtIHJlYWRfY3N2KCdEYXRhL01TRlQudHh0JywgY29sX3R5cGVzID0gY29scygpKVxuUEZFIDwtIHJlYWRfY3N2KCdEYXRhL1BGRS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5TUFkgPC0gcmVhZF9jc3YoJ0RhdGEvU1BZLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcblRSViA8LSByZWFkX2NzdignRGF0YS9UUlYudHh0JywgY29sX3R5cGVzID0gY29scygpKVxuVVRYIDwtIHJlYWRfY3N2KCdEYXRhL1VUWC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5WIDwtIHJlYWRfY3N2KCdEYXRhL1YudHh0JywgY29sX3R5cGVzID0gY29scygpKVxuV01UIDwtIHJlYWRfY3N2KCdEYXRhL1dNVC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpXG5YT00gPC0gcmVhZF9jc3YoJ0RhdGEvWE9NLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSlcbmBgYCJ9 -->
+<pre class="r"><code>AXP &lt;- read_csv(&#39;Data/AXP.txt&#39;, col_types = cols())
+CAT &lt;- read_csv(&#39;Data/CAT.txt&#39;, col_types = cols())
+CSCO &lt;- read_csv(&#39;Data/CSCO.txt&#39;, col_types = cols())
+CVX &lt;- read_csv(&#39;Data/CVX.txt&#39;, col_types = cols())
+DD &lt;- read_csv(&#39;Data/DD.txt&#39;, col_types = cols())
+GE &lt;- read_csv(&#39;Data/GE.txt&#39;, col_types = cols())
+GS &lt;- read_csv(&#39;Data/GS.txt&#39;, col_types = cols())
+HD &lt;- read_csv(&#39;Data/HD.txt&#39;, col_types = cols())
+IBM &lt;- read_csv(&#39;Data/IBM.txt&#39;, col_types = cols())
+JNJ &lt;- read_csv(&#39;Data/JNJ.txt&#39;, col_types = cols())
+JPM &lt;- read_csv(&#39;Data/JPM.txt&#39;, col_types = cols())
+KO &lt;- read_csv(&#39;Data/KO.txt&#39;, col_types = cols())
+MCD &lt;- read_csv(&#39;Data/MCD.txt&#39;, col_types = cols())
+MMM &lt;- read_csv(&#39;Data/MMM.txt&#39;, col_types = cols())
+MSFT &lt;- read_csv(&#39;Data/MSFT.txt&#39;, col_types = cols())
+PFE &lt;- read_csv(&#39;Data/PFE.txt&#39;, col_types = cols())
+SPY &lt;- read_csv(&#39;Data/SPY.txt&#39;, col_types = cols())
+TRV &lt;- read_csv(&#39;Data/TRV.txt&#39;, col_types = cols())
+UTX &lt;- read_csv(&#39;Data/UTX.txt&#39;, col_types = cols())
+V &lt;- read_csv(&#39;Data/V.txt&#39;, col_types = cols())
+WMT &lt;- read_csv(&#39;Data/WMT.txt&#39;, col_types = cols())
+XOM &lt;- read_csv(&#39;Data/XOM.txt&#39;, col_types = cols())</code></pre>
+<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>OK, so now we have these files, which are TOO BIG. Let’s first clean the data to get it from 2000 onwards.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYSA8LSBmaWx0ZXIoQVhQLCBBWFAkRGF0ZSA+PSAnMDEvMDEvMjAxMicpXG5gYGAifQ== -->
-<pre class="r"><code>a &lt;- filter(AXP, AXP$Date &gt;= &#39;01/01/2012&#39;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xlYW5fZGF0YSA8LSBmdW5jdGlvbih0aWNrZXIsZmxhZyA9IDApIHtcbiAgIyNJbiB0aGlzIGZ1bmN0aW9uLCB3ZSdyZSBnb2luZyB0byBmaXJzdCBjb252ZXJ0IHRoZSBEYXRlIGNvbHVtbiB0byBkYXRlOlxuICBpZihmbGFnID09IDApe1xuICAgICB0aWNrZXIkRGF0ZSA8LSBhcy5EYXRlKHRpY2tlciREYXRlLCAnJWQvJW0vJVknKVxuICB9IGVsc2V7ICMjVGhpcyBpcyBiZWNhdXNlIFYudHh0IGhhcyBtb250aCBhbmQgZGF5IHN3YXBwZWQsIGkga25vdyB3aG8gaXQgaXMgXG4gICAgIHRpY2tlciREYXRlIDwtIGFzLkRhdGUodGlja2VyJERhdGUsICclbS8lZC8lWScpXG4gIH1cbiAgXG4gICMjIFRoZW4sIHdlIHdhbnQgdG8gcmVzdHJpY3QgaXQgZnJvbSAyMDAwIG9ud2FyZHNcbiAgICAgbmV3X3RpY2tlciA8LSBmaWx0ZXIodGlja2VyLCBmb3JtYXQodGlja2VyJERhdGUsICclWScpID49IDIwMDApXG4gIHJldHVybihuZXdfdGlja2VyKVxufVxuYGBgIn0= -->
+<pre class="r"><code>clean_data &lt;- function(ticker,flag = 0) {
+  ##In this function, we&#39;re going to first convert the Date column to date:
+  if(flag == 0){
+     ticker$Date &lt;- as.Date(ticker$Date, &#39;%d/%m/%Y&#39;)
+  } else{ ##This is because V.txt has month and day swapped, i know who it is 
+     ticker$Date &lt;- as.Date(ticker$Date, &#39;%m/%d/%Y&#39;)
+  }
+  
+  ## Then, we want to restrict it from 2000 onwards
+     new_ticker &lt;- filter(ticker, format(ticker$Date, &#39;%Y&#39;) &gt;= 2000)
+  return(new_ticker)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGVuZ3RoKEFYUCREYXRlKVxuXG5gYGAifQ== -->
+<pre class="r"><code>length(AXP$Date)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDY1OTUyOFxuIn0= -->
+<pre><code>[1] 659528</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyNDb25zdHJ1YSBhIG1hdHJpeiBwcnVtIGRpYSBlc3BlY8OtZmljbzpcbkEgPC0gbGlzdCgpXG5mb3IoZCBpbiBBWFAkRGF0ZSl7XG4gIGRmMSA8LSBmaWx0ZXIoQVhQLCBBWFAkRGF0ZSA9PSBkKVxuICAjcHJpbnQoZGYxKVxuICAjI21hdCA8LSBtYXRyaXgoYyhkZjEkT3BlbiwgZGYxJEhpZ2gsIGRmMSRMb3csIGRmJENsb3NlLCBkZjEkVm9sdW1lKSwgbnJvdyA9IGxlbmd0aChkZjEkT3BlbikpXG4gIEEgPC0gbGlzdChBLGRmMSlcbn1cbmBgYCJ9 -->
+<pre class="r"><code>##Construa a matriz prum dia específico:
+A &lt;- list()
+for(d in AXP$Date){
+  df1 &lt;- filter(AXP, AXP$Date == d)
+  #print(df1)
+  ##mat &lt;- matrix(c(df1$Open, df1$High, df1$Low, df$Close, df1$Volume), nrow = length(df1$Open))
+  A &lt;- list(A,df1)
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQoNCkZpcnN0IG9mIGFsbCwgd2UgbmVlZCB0byByZWFkIGFsbCB0aGUgZmlsZXMuDQoNCmBgYHtyfQ0Kc2V0d2QoIkM6L1VzZXJzL3RhbWlyLnNhbGVtL2Vjb25pdl9leDEiKQ0KbGlicmFyeShyZWFkcikNCkFYUCA8LSByZWFkX2NzdignRGF0YS9BWFAudHh0JywgY29sX3R5cGVzID0gIGMoRCxjLGQsZCxkLGQsZCkpDQpDQVQgPC0gcmVhZF9jc3YoJ0RhdGEvQ0FULnR4dCcpDQpDU0NPIDwtIHJlYWRfY3N2KCdEYXRhL0NTQ08udHh0JykNCkNWWCA8LSByZWFkX2NzdignRGF0YS9DVlgudHh0JykNCkREIDwtIHJlYWRfY3N2KCdEYXRhL0RELnR4dCcpDQpHRSA8LSByZWFkX2NzdignRGF0YS9HRS50eHQnKQ0KR1MgPC0gcmVhZF9jc3YoJ0RhdGEvR1MudHh0JykNCkhEIDwtIHJlYWRfY3N2KCdEYXRhL0hELnR4dCcpDQpJQk0gPC0gcmVhZF9jc3YoJ0RhdGEvSUJNLnR4dCcpDQpKTkogPC0gcmVhZF9jc3YoJ0RhdGEvSk5KLnR4dCcpDQpKUE0gPC0gcmVhZC5jc3YoJ0RhdGEvSlBNLnR4dCcpDQpLTyA8LSByZWFkLmNzdignRGF0YS9LTy50eHQnKQ0KTUNEIDwtIHJlYWQuY3N2KCdEYXRhL01DRC50eHQnKQ0KTU1NIDwtIHJlYWQuY3N2KCdEYXRhL01NTS50eHQnKQ0KTVNGVCA8LSByZWFkLmNzdignRGF0YS9NU0ZULnR4dCcpDQpQRkUgPC0gcmVhZC5jc3YoJ0RhdGEvUEZFLnR4dCcpDQpTUFkgPC0gcmVhZC5jc3YoJ0RhdGEvU1BZLnR4dCcpDQpUUlYgPC0gcmVhZC5jc3YoJ0RhdGEvVFJWLnR4dCcpDQpVVFggPC0gcmVhZC5jc3YoJ0RhdGEvVVRYLnR4dCcpDQpWIDwtIHJlYWQuY3N2KCdEYXRhL1YudHh0JykNCldNVCA8LSByZWFkLmNzdignRGF0YS9XTVQudHh0JykNClhPTSA8LSByZWFkLmNzdignRGF0YS9YT00udHh0JykNCmBgYA0KDQpPSywgc28gbm93IHdlIGhhdmUgdGhlc2UgZmlsZXMsIHdoaWNoIGFyZSBUT08gQklHLiBMZXQncyBmaXJzdCBjbGVhbiB0aGUgZGF0YSB0byBnZXQgaXQgZnJvbSAyMDAwIG9ud2FyZHMuDQpgYGB7cn0NCmZ1bmN0aW9uIGNsZWFuX2RhdGF7fQ0KYGBgDQoNCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQoNCkZpcnN0IG9mIGFsbCwgd2UgbmVlZCB0byByZWFkIGFsbCB0aGUgZmlsZXMuDQoNCmBgYHtyfQ0KbGlicmFyeShyZWFkcikNCmxpYnJhcnkoZHBseXIpDQpBWFAgPC0gcmVhZF9jc3YoJ0RhdGEvQVhQLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNCkNBVCA8LSByZWFkX2NzdignRGF0YS9DQVQudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KQ1NDTyA8LSByZWFkX2NzdignRGF0YS9DU0NPLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNCkNWWCA8LSByZWFkX2NzdignRGF0YS9DVlgudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KREQgPC0gcmVhZF9jc3YoJ0RhdGEvREQudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KR0UgPC0gcmVhZF9jc3YoJ0RhdGEvR0UudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KR1MgPC0gcmVhZF9jc3YoJ0RhdGEvR1MudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KSEQgPC0gcmVhZF9jc3YoJ0RhdGEvSEQudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KSUJNIDwtIHJlYWRfY3N2KCdEYXRhL0lCTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpDQpKTkogPC0gcmVhZF9jc3YoJ0RhdGEvSk5KLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNCkpQTSA8LSByZWFkX2NzdignRGF0YS9KUE0udHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KS08gPC0gcmVhZF9jc3YoJ0RhdGEvS08udHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KTUNEIDwtIHJlYWRfY3N2KCdEYXRhL01DRC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpDQpNTU0gPC0gcmVhZF9jc3YoJ0RhdGEvTU1NLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNCk1TRlQgPC0gcmVhZF9jc3YoJ0RhdGEvTVNGVC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpDQpQRkUgPC0gcmVhZF9jc3YoJ0RhdGEvUEZFLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNClNQWSA8LSByZWFkX2NzdignRGF0YS9TUFkudHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KVFJWIDwtIHJlYWRfY3N2KCdEYXRhL1RSVi50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpDQpVVFggPC0gcmVhZF9jc3YoJ0RhdGEvVVRYLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNClYgPC0gcmVhZF9jc3YoJ0RhdGEvVi50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpDQpXTVQgPC0gcmVhZF9jc3YoJ0RhdGEvV01ULnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkNClhPTSA8LSByZWFkX2NzdignRGF0YS9YT00udHh0JywgY29sX3R5cGVzID0gY29scygpKQ0KYGBgDQoNCk9LLCBzbyBub3cgd2UgaGF2ZSB0aGVzZSBmaWxlcywgd2hpY2ggYXJlIFRPTyBCSUcuIExldCdzIGZpcnN0IGNsZWFuIHRoZSBkYXRhIHRvIGdldCBpdCBmcm9tIDIwMDAgb253YXJkcy4NCmBgYHtyfQ0KY2xlYW5fZGF0YSA8LSBmdW5jdGlvbih0aWNrZXIsZmxhZyA9IDApIHsNCiAgIyNJbiB0aGlzIGZ1bmN0aW9uLCB3ZSdyZSBnb2luZyB0byBmaXJzdCBjb252ZXJ0IHRoZSBEYXRlIGNvbHVtbiB0byBkYXRlOg0KICBpZihmbGFnID09IDApew0KICAgICB0aWNrZXIkRGF0ZSA8LSBhcy5EYXRlKHRpY2tlciREYXRlLCAnJWQvJW0vJVknKQ0KICB9IGVsc2V7ICMjVGhpcyBpcyBiZWNhdXNlIFYudHh0IGhhcyBtb250aCBhbmQgZGF5IHN3YXBwZWQsIGkga25vdyB3aG8gaXQgaXMgDQogICAgIHRpY2tlciREYXRlIDwtIGFzLkRhdGUodGlja2VyJERhdGUsICclbS8lZC8lWScpDQogIH0NCiAgDQogICMjIFRoZW4sIHdlIHdhbnQgdG8gcmVzdHJpY3QgaXQgZnJvbSAyMDAwIG9ud2FyZHMNCiAgICAgbmV3X3RpY2tlciA8LSBmaWx0ZXIodGlja2VyLCBmb3JtYXQodGlja2VyJERhdGUsICclWScpID49IDIwMDApDQogIHJldHVybihuZXdfdGlja2VyKQ0KfQ0KYGBgDQoNCg0KYGBge3J9DQpBWFAgPC0gY2xlYW5fZGF0YShBWFApDQp0ZXN0ZUJVUlJPIDwtIGxpc3QoKQ0KdGVzdGVCVVJST1tbMV1dIA0KYGBgDQoNCmBgYHtyfQ0KIyNDb25zdHJ1YSBhIG1hdHJpeiBwcnVtIGRpYSBlc3BlY8OtZmljbzoNCkEgPC0gbGlzdCgpDQpmb3IoZCBpbiBBWFAkRGF0ZSl7DQogIGRmMSA8LSBmaWx0ZXIoQVhQLCBBWFAkRGF0ZSA9PSBkKQ0KICAjcHJpbnQoZGYxKQ0KICAjI21hdCA8LSBtYXRyaXgoYyhkZjEkT3BlbiwgZGYxJEhpZ2gsIGRmMSRMb3csIGRmJENsb3NlLCBkZjEkVm9sdW1lKSwgbnJvdyA9IGxlbmd0aChkZjEkT3BlbikpDQogIEEgPC0gbGlzdChBLGRmMSkNCn0NCmBgYA0KDQo=</div>
 
 
 
