@@ -19,28 +19,28 @@ First of all, we need to read all the files.
 ```{r}
 library(readr)
 library(dplyr)
-AXP <- read_csv('Data/AXP.txt', col_types = cols())
-CAT <- read_csv('Data/CAT.txt', col_types = cols())
-CSCO <- read_csv('Data/CSCO.txt', col_types = cols())
-CVX <- read_csv('Data/CVX.txt', col_types = cols())
-DD <- read_csv('Data/DD.txt', col_types = cols())
-GE <- read_csv('Data/GE.txt', col_types = cols())
-GS <- read_csv('Data/GS.txt', col_types = cols())
-HD <- read_csv('Data/HD.txt', col_types = cols())
-IBM <- read_csv('Data/IBM.txt', col_types = cols())
-JNJ <- read_csv('Data/JNJ.txt', col_types = cols())
-JPM <- read_csv('Data/JPM.txt', col_types = cols())
-KO <- read_csv('Data/KO.txt', col_types = cols())
-MCD <- read_csv('Data/MCD.txt', col_types = cols())
-MMM <- read_csv('Data/MMM.txt', col_types = cols())
-MSFT <- read_csv('Data/MSFT.txt', col_types = cols())
-PFE <- read_csv('Data/PFE.txt', col_types = cols())
-SPY <- read_csv('Data/SPY.txt', col_types = cols())
-TRV <- read_csv('Data/TRV.txt', col_types = cols())
-UTX <- read_csv('Data/UTX.txt', col_types = cols())
-V <- read_csv('Data/V.txt', col_types = cols())
-WMT <- read_csv('Data/WMT.txt', col_types = cols())
-XOM <- read_csv('Data/XOM.txt', col_types = cols())
+AXP <- data.frame(read_csv('Data/AXP.txt', col_types = cols()))
+CAT <- data.frame(read_csv('Data/CAT.txt', col_types = cols()))
+CSCO <- data.frame(read_csv('Data/CSCO.txt', col_types = cols()))
+CVX <- data.frame(read_csv('Data/CVX.txt', col_types = cols()))
+DD <- data.frame(read_csv('Data/DD.txt', col_types = cols()))
+GE <- data.frame(read_csv('Data/GE.txt', col_types = cols()))
+GS <- data.frame(read_csv('Data/GS.txt', col_types = cols()))
+HD <- data.frame(read_csv('Data/HD.txt', col_types = cols()))
+IBM <- data.frame(read_csv('Data/IBM.txt', col_types = cols()))
+JNJ <- data.frame(read_csv('Data/JNJ.txt', col_types = cols()))
+JPM <- data.frame(read_csv('Data/JPM.txt', col_types = cols()))
+KO <- data.frame(read_csv('Data/KO.txt', col_types = cols()))
+MCD <- data.frame(read_csv('Data/MCD.txt', col_types = cols()))
+MMM <- data.frame(read_csv('Data/MMM.txt', col_types = cols()))
+MSFT <- data.frame(read_csv('Data/MSFT.txt', col_types = cols()))
+PFE <- data.frame(read_csv('Data/PFE.txt', col_types = cols()))
+SPY <- data.frame(read_csv('Data/SPY.txt', col_types = cols()))
+TRV <- data.frame(read_csv('Data/TRV.txt', col_types = cols()))
+UTX <- data.frame(read_csv('Data/UTX.txt', col_types = cols()))
+V <- data.frame(read_csv('Data/V.txt', col_types = cols()))
+WMT <- data.frame(read_csv('Data/WMT.txt', col_types = cols()))
+XOM <- data.frame(read_csv('Data/XOM.txt', col_types = cols()))
 ```
 
 OK, so now we have these files, which are TOO BIG. Let's first clean the data to get it from 2000 onwards.
@@ -62,18 +62,19 @@ clean_data <- function(ticker,flag = 0) {
 
 ```{r}
 AXP <- clean_data(AXP)
-testeBURRO <- list()
-testeBURRO[[1]] 
+df1 <- AXP[AXP$Date == AXP$Date[1],]
 ```
 
 ```{r}
 ##Construa a matriz prum dia específico:
-A <- list()
-for(d in AXP$Date){
-  df1 <- filter(AXP, AXP$Date == d)
-  #print(df1)
-  ##mat <- matrix(c(df1$Open, df1$High, df1$Low, df$Close, df1$Volume), nrow = length(df1$Open))
-  A <- list(A,df1)
+n <- length(unique(AXP$Date))
+arr <- array(NA, dim = c(390,8,n))
+dias <- unique(AXP$Date)
+lista <- list()
+for(j in 1:n){
+
+lista <- c(lista,AXP[AXP$Date == dias[j],])
 }
+lapply(lista, dim)
 ```
 
