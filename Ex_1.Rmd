@@ -61,20 +61,28 @@ clean_data <- function(ticker,flag = 0) {
 
 
 ```{r}
-AXP <- clean_data(AXP)
-df1 <- AXP[AXP$Date == AXP$Date[1],]
+library(dplyr)
+
+make_data <- function(ticker, flag = 0){
+  clean_ticker <- clean_data(ticker, flag)
+  minute_df <- data.frame('Time' = unique(clean_ticker$Time))
+  dias <- unique(AXP$Date)
+  n <- length(dias)
+  arr <- array(NA, dim = c(390, 7, n))
+  for(j in 1:n){
+    arr[,,j] <- clean_ticker[clean_ticker$Date == dias[j],]
+  }
+  return(arr)
+}
+AXP2 <- clean_data(AXP)
+minute_df <- data.frame('Time' = unique(AXP2$Time))
+df1 <- AXP2[AXP2$Date == AXP$Date[1],]
+
+df2 <- left_join(minute_df, df1, by = 'Time')
 ```
 
 ```{r}
 ##Construa a matriz prum dia específico:
-n <- length(unique(AXP$Date))
-arr <- array(NA, dim = c(390,8,n))
-dias <- unique(AXP$Date)
-lista <- list()
-for(j in 1:n){
+a <- make_data(AXP)
 
-lista <- c(lista,AXP[AXP$Date == dias[j],])
-}
-lapply(lista, dim)
 ```
-
