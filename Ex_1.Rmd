@@ -69,7 +69,7 @@ make_data <- function(ticker, flag = 0){
   clean_ticker <- clean_data(ticker, flag)
   ##Create a list of ALL existing minutes
   minute_list <- sort(unique(clean_ticker$Time))
-  minute_df <- data.frame('Time' = minute_list) ##This df is used only for the left join 
+  minute_df <- data.frame('Time' = minute_list) ##This df is      used only for the left join 
   dias <- unique(clean_ticker$Date)
   n <- length(dias)
  ## arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n)) deprecated
