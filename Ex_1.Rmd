@@ -66,23 +66,34 @@ library(dplyr)
 make_data <- function(ticker, flag = 0){
   clean_ticker <- clean_data(ticker, flag)
   minute_df <- data.frame('Time' = unique(clean_ticker$Time))
-  dias <- unique(AXP$Date)
+  dias <- unique(clean_ticker$Date)
   n <- length(dias)
-  arr <- array(NA, dim = c(390, 7, n))
+  arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n))
+
   for(j in 1:n){
-    arr[,,j] <- clean_ticker[clean_ticker$Date == dias[j],]
+    df1 <- clean_ticker[clean_ticker$Date == dias[j],]
+    df2 <- as.matrix(left_join(minute_df, df1, by = 'Time'))
+    arr[,,j] <- df2
   }
   return(arr)
 }
-AXP2 <- clean_data(AXP)
-minute_df <- data.frame('Time' = unique(AXP2$Time))
-df1 <- AXP2[AXP2$Date == AXP$Date[1],]
 
-df2 <- left_join(minute_df, df1, by = 'Time')
 ```
 
 ```{r}
-##Construa a matriz prum dia específico:
+##Construa a função na mão pra ver se ela faz o que CARALHO você quer
 a <- make_data(AXP)
+
+```
+```{r}
+clean_ticker <- clean_data(AXP)
+minute_df <- data.frame('Time' = unique(clean_ticker$Time))
+dias <- unique(clean_ticker$Date)
+n <- length(dias)
+j =
+arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n))
+df1 <- clean_ticker[clean_ticker$Date == dias[j],]
+df2 <- as.matrix(left_join(minute_df, df1, by = 'Time'))
+arr[,,j] <- df2
 
 ```
