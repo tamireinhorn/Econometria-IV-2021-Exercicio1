@@ -64,24 +64,28 @@ clean_data <- function(ticker,flag = 0) {
 library(dplyr)
 
 make_data <- function(ticker, flag = 0){
+  ##So here's the deal: I want a list of dataframes, all with the same length of minutes.
+  ##But i want every element of this list to be a list in itself: the first element is the DATE of the dataframe, the second is the dataframe itself. 
   clean_ticker <- clean_data(ticker, flag)
   minute_df <- data.frame('Time' = unique(clean_ticker$Time))
   dias <- unique(clean_ticker$Date)
   n <- length(dias)
-  arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n))
-
+ ## arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n)) deprecated
+  list <- vector(mode = "list", length =  n)
   for(j in 1:n){
     df1 <- clean_ticker[clean_ticker$Date == dias[j],]
-    df2 <- as.matrix(left_join(minute_df, df1, by = 'Time'))
-    arr[,,j] <- df2
+    df2 <- left_join(minute_df, df1, by = 'Time')
+    list[[j]] <- vector(mode = 'list', length = 2) ##Creates the inner list
+    list[[j]][1] <- as.list(dias[j]) ##Fills the day. As list stops conversion to int.
+    list[[j]][[2]] <- df2
   }
-  return(arr)
+  return(list)
 }
 
 ```
 
 ```{r}
-##Construa a função na mão pra ver se ela faz o que CARALHO você quer
+
 a <- make_data(AXP)
 
 ```
@@ -90,10 +94,14 @@ clean_ticker <- clean_data(AXP)
 minute_df <- data.frame('Time' = unique(clean_ticker$Time))
 dias <- unique(clean_ticker$Date)
 n <- length(dias)
-j =
+j = 1 
+list <- vector(mode = "list", length =  n)
 arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n))
 df1 <- clean_ticker[clean_ticker$Date == dias[j],]
-df2 <- as.matrix(left_join(minute_df, df1, by = 'Time'))
-arr[,,j] <- df2
+df2 <- left_join(minute_df, df1, by = 'Time')
+
+list[[j]] <- vector(mode = 'list', length = 2)
+list[[j]][1] <- as.list(dias[j])
+list[[j]][[2]] <- df2
 
 ```
