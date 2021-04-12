@@ -99,9 +99,9 @@ make_data <- function(ticker, flag = 0){
       
       #finally, a minute of day j is receiving relevant economic variables	      
 
-            list[[j]][[minute]][[1]] <- df_minute$format(df_minute$Date,'%d')
-            list[[j]][[minute]][[2]] <- df_minute$format(df_minute$Date,'%m')
-            list[[j]][[minute]][[3]] <- df_minute$format(df_minute$Date,'%y')
+            list[[j]][[minute]][[1]] <- format(df_minute$Date,'%d')
+            list[[j]][[minute]][[2]] <- format(df_minute$Date,'%m')
+            list[[j]][[minute]][[3]] <- format(df_minute$Date,'%y')
             list[[j]][[minute]][[4]] <- df_minute$Open
             list[[j]][[minute]][[5]] <- df_minute$Close
             list[[j]][[minute]][[6]] <- df_minute$Low
@@ -117,11 +117,40 @@ make_data <- function(ticker, flag = 0){
 }
 
 ```
-
+Now, we want to apply the function to all of our dataframes, finally creating the tensors we needed
 ```{r}
-x <- 
+AXP_t <-  make_data(AXP)
+BA_t <- make_data(AXP)
+CAT_t <-  make_data(AXP)
+CSCO_t <-  make_data(AXP)
+CVX_t <-  make_data(AXP)
+DD_t <- make_data(AXP)
+DIS_t <-  make_data(AXP)
+GE_t <- make_data(AXP)
+GS_t <- make_data(AXP)
+HD_t <- make_data(AXP)
+IBM_t <-  make_data(AXP)
+INTC_t <-  make_data(AXP)
+JNJ_t <-  make_data(AXP)
+JPM_t <-  make_data(AXP)
+KO_t <- make_data(AXP)
+MCD_t <-  make_data(AXP)
+MMM_t <-  make_data(AXP)
+MRK_t <-  make_data(AXP)
+MSFT_t <-  make_data(AXP)
+NKE_t <-  make_data(AXP)
+PFE_t <-  make_data(AXP)
+PG_t <- make_data(AXP)
+SPY_t <-  make_data(AXP)
+TRV_t <-  make_data(AXP)
+UNH_t <-  make_data(AXP)
+UTX_t <-  make_data(AXP)
+V_t < make_data(AXP, flag = 1)
+VZ_t <- make_data(AXP)
+WMT_t <-  make_data(AXP)
+XOM_t <-  make_data(AXP)
 
-```
+ make_data(AXP```
 ```{r}
 clean_ticker <- clean_data(AXP)
 minute_list <- sort(unique(clean_ticker$Time))
