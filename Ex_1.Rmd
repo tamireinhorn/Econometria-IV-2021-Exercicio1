@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Exercise 1"
 output: html_notebook
 ---
 
@@ -14,170 +14,168 @@ When you save the notebook, an HTML file containing the code and output will be 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
-First, packages will be loaded.
+First of all, we need to read all the files.
 
 ```{r}
 library(readr)
 library(dplyr)
-library(stringr)
+AXP <- data.frame(read_csv('Data/AXP.txt', col_types = cols()))
+BA <- data.frame(read_csv('Data/BA.txt', col_types = cols()))
+CAT <- data.frame(read_csv('Data/CAT.txt', col_types = cols()))
+CSCO <- data.frame(read_csv('Data/CSCO.txt', col_types = cols()))
+CVX <- data.frame(read_csv('Data/CVX.txt', col_types = cols()))
+DD <- data.frame(read_csv('Data/DD.txt', col_types = cols()))
+DIS <- data.frame(read_csv('Data/DIS.txt', col_types = cols()))
+GE <- data.frame(read_csv('Data/GE.txt', col_types = cols()))
+GS <- data.frame(read_csv('Data/GS.txt', col_types = cols()))
+HD <- data.frame(read_csv('Data/HD.txt', col_types = cols()))
+IBM <- data.frame(read_csv('Data/IBM.txt', col_types = cols()))
+INTC <- data.frame(read_csv('Data/INTC.txt', col_types = cols()))
+JNJ <- data.frame(read_csv('Data/JNJ.txt', col_types = cols()))
+JPM <- data.frame(read_csv('Data/JPM.txt', col_types = cols()))
+KO <- data.frame(read_csv('Data/KO.txt', col_types = cols()))
+MCD <- data.frame(read_csv('Data/MCD.txt', col_types = cols()))
+MMM <- data.frame(read_csv('Data/MMM.txt', col_types = cols()))
+MRK <- data.frame(read_csv('Data/MRK.txt', col_types =  cols()))
+MSFT <- data.frame(read_csv('Data/MSFT.txt', col_types = cols()))
+NKE <- data.frame(read_csv('Data/NKE.txt', col_types =  cols()))
+PFE <- data.frame(read_csv('Data/PFE.txt', col_types = cols()))
+PG <- data.frame(read_csv('Data/PG.txt', col_types = cols()))
+SPY <- data.frame(read_csv('Data/SPY.txt', col_types = cols()))
+TRV <- data.frame(read_csv('Data/TRV.txt', col_types = cols()))
+UNH <- data.frame(read_csv('Data/UNH.txt', col_types =  cols()))
+UTX <- data.frame(read_csv('Data/UTX.txt', col_types = cols()))
+V <- data.frame(read_csv('Data/V.txt', col_types = cols()))
+VZ <- data.frame(read_csv('Data/VZ.txt', col_types = cols()))
+WMT <- data.frame(read_csv('Data/WMT.txt', col_types = cols()))
+XOM <- data.frame(read_csv('Data/XOM.txt', col_types = cols()))
 ```
 
-Now, files will be read and a list with clean data will be created:
-
+OK, so now we have these files, which are TOO BIG. Let's first clean the data to get it from 2000 onwards.
 ```{r}
-
-files=list.files('Data') #creates list with names of all files 
-
-all_stocks <- vector(mode = "list", length = 30) #creates an empty list 
- 
-#the created list will be filled with each data file (which will be read as a dataframe) 
- 
-for (i in 1:length(files)) { 
-     
-    name <- paste("Data/",files[i], sep = "") 
-    all_stocks[i] <- files[i] 
-    all_stocks[[i]] <- read.csv(name) 
-    print(files[i]) 
-}
-
-#the date column will be converted into date format 
-
-convert_to_date <- function(x){ 
-  x$Date <- as.Date(as.character(x$Date), format='%m/%d/%Y') 
-  x 
-} 
-
-#a lapply command will impose the date convertion for all companies in all_stocks
-
-new_all_stocks <- lapply(all_stocks, convert_to_date)
-
-#a function will be created to filter data for each company as of 2000, and this will be applied to the entire list of companies
-
-as_of_2000 <- function(ticker){ 
-new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)  
-return(new_ticker) 
-} 
-
-
-#Such function will be applied to the list through lapply, and clean_data will be the list with 30 clean data frames, with a formatted date and observations starting in 2000
-
-clean_data <- lapply(new_all_stocks,as_of_2000) 
-
-names(clean_data) <- str_sub(files, end=-5) #assign a name to each company (excludes .txt)
-```
-
-Now, the tensor for each firm will be created. A tensor will be created for a single firm (referred to as "ticker") and then for the rest through lapply
-
-```{r}
-
-make_data <- function(ticker){
-  
-  #Create a list of all existing minutes
-  minute_list <- sort(unique(ticker$Time))
-  
-  #the minute_list was converted into a df only so it can be used for the left join adjustment
-  minute_df <- data.frame('Time' = minute_list)   
-
-  dias <- unique(ticker$Date)
-  n <- length(dias)
-
-  #a list is created for the ticker, containing all the days in which it operated
-  list <- vector(mode = "list", length =  n) 
-  for(j in 1:n){
-    day_df <- ticker[ticker$Date == dias[j],] #df containing information on day j
-    adj_day_df <- left_join(minute_df, day_df, by = 'Time') #This is the dataframe with all data for all possible minutes, whether they have observations that day or not. This is just an ajustment so all companies are similar in dimension.
-    
-    list[[j]] <- vector(mode = 'list', length = 390) #Creates an inner list representing all minutes of day j, for the ticker
-    
-    for (minute in 1:390){ #Now we loop over all possible minutes
-      
-    inner_variable_list <- vector(mode = 'list', length = 9) #This will have the length equal to number of variables of interest
-    names(inner_variable_list) <- c("Day", "Month", "Year", "Open", "Close", "Low", "High", "Volume","r_cc")
-      
-    list[[j]][[minute]] <- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next. Here, we explicit that list[[j]][[min]] is a list on its own, by associating it with inner_variable_list, which is a list
-      
-    df_minute <- adj_day_df[adj_day_df$Time == minute_list[minute],] ##We open the dataframe minute by minute
-      
-    #This chunk will be used for the r_cc    
-
-    if (minute==1){
-       jif=0
+clean_data <- function(ticker,flag = 0) {
+  ##In this function, we're going to first convert the Date column to date:
+  if(flag == 0){
+     ticker$Date <- as.Date(ticker$Date, '%d/%m/%Y')
+  } else{ ##This is because V.txt has month and day swapped, i know who it is 
+     ticker$Date <- as.Date(ticker$Date, '%m/%d/%Y')
   }
-    else {
-       jif=1
-  }  
+  
+  ## Then, we want to restrict it from 2000 onwards
+     new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)
+  return(new_ticker)
+}
+```
+
+
+```{r}
+library(dplyr)
+
+make_data <- function(ticker, flag = 0){
+  ##So here's the deal: I want a list of dataframes, all with the same length of minutes.
+  ##But i want every element of this list to be a list in itself: the first element is the DATE of the dataframe, the second is the dataframe itself. 
+  clean_ticker <- clean_data(ticker, flag)
+  ##Create a list of ALL existing minutes
+  minute_list <- sort(unique(clean_ticker$Time))
+  minute_df <- data.frame('Time' = minute_list) ##This df is      used only for the left join 
+  dias <- unique(clean_ticker$Date)
+  n <- length(dias)
+ ## arr <- array(NA, dim = c(390, dim(clean_ticker)[2], n)) deprecated
+  list <- vector(mode = "list", length =  n)
+  names(list) <- dias ##I also want to NAME the elements of the list to know which date it is.
+  for(j in 1:n){
+    day_df <- clean_ticker[clean_ticker$Date == dias[j],]
+    adj_day_df <- left_join(minute_df, day_df, by = 'Time') ##This is the dataframe with all data for all possible minutes, whether they have observations that day or not
+    inner_list <-  vector(mode = 'list', length = 390)  ##Creates the inner list
+    names(inner_list) <- minute_list ##I want to know WHICH MINUTE i'm referencing. 
+    list[[j]] <- inner_list ##Assign this inner list as the j-th element of our day list!
+    for (minute in 1:390){ #Now we loop over all possible minutes
+            inner_variable_list <- vector(mode = 'list', length = 9) #This will have the length equal to number of variables of interest
+            names(inner_variable_list) <- c("Day", "Month", "Year", "Open", "Close", "Low", "High", "Volume","r_cc")
+      
+            list[[j]][[minute]] <- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next. Here, we explicit that list[[j]][[min]] is a list on its own, by associating it with inner_variable_list, which is a list
+      
+            df_minute <- adj_day_df[adj_day_df$Time == minute_list[minute],] ##We open the dataframe minute by minute
+
         
-    df_minute_minus <- adj_day_df[adj_day_df$Time == minute_list[minute-jif],]
+            df_minute_minus <- adj_day_df[adj_day_df$Time == minute_list[minute-1],]
       
       #finally, a minute of day j is receiving relevant economic variables	      
 
-      list[[j]][[minute]][[1]] <- df_minute$format(df_minute$Date,'%d')
-      list[[j]][[minute]][[2]] <- df_minute$format(df_minute$Date,'%m')
-      list[[j]][[minute]][[3]] <- df_minute$format(df_minute$Date,'%y')
-      list[[j]][[minute]][[4]] <- df_minute$Open
-      list[[j]][[minute]][[5]] <- df_minute$Close
-      list[[j]][[minute]][[6]] <- df_minute$Low
-      list[[j]][[minute]][[7]] <- df_minute$High
-      list[[j]][[minute]][[8]] <- df_minute$Volume
-      list[[j]][[minute]][[9]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
-    }
+            list[[j]][[minute]][[1]] <- format(df_minute$Date,'%d')
+            list[[j]][[minute]][[2]] <- format(df_minute$Date,'%m')
+            list[[j]][[minute]][[3]] <- format(df_minute$Date,'%Y')
+            list[[j]][[minute]][[4]] <- df_minute$Open
+            list[[j]][[minute]][[5]] <- df_minute$Close
+            list[[j]][[minute]][[6]] <- df_minute$Low
+            list[[j]][[minute]][[7]] <- df_minute$High
+            list[[j]][[minute]][[8]] <- df_minute$Volume
+            list[[j]][[minute]][[9]] <- log((df_minute$Close)/(df_minute_minus$Close)) ##Changed to be the log return.
+                        }
+      
+                }
     
-  }
+  
   return(list)
 }
-```
 
+```
+Now, we want to apply the function to all of our dataframes, finally creating the tensors we needed
 ```{r}
-#testando para AXP
-tensor_AXP <- make_data(clean_data$AXP)
-tensor_AXP[[1]][[3]]$Open
+AXP_t <-  make_data(AXP)
+BA_t <- make_data(AXP)
+CAT_t <-  make_data(AXP)
+CSCO_t <-  make_data(AXP)
+CVX_t <-  make_data(AXP)
+DD_t <- make_data(AXP)
+DIS_t <-  make_data(AXP)
+GE_t <- make_data(AXP)
+GS_t <- make_data(AXP)
+HD_t <- make_data(AXP)
+IBM_t <-  make_data(AXP)
+INTC_t <-  make_data(AXP)
+JNJ_t <-  make_data(AXP)
+JPM_t <-  make_data(AXP)
+KO_t <- make_data(AXP)
+MCD_t <-  make_data(AXP)
+MMM_t <-  make_data(AXP)
+MRK_t <-  make_data(AXP)
+MSFT_t <-  make_data(AXP)
+NKE_t <-  make_data(AXP)
+PFE_t <-  make_data(AXP)
+PG_t <- make_data(AXP)
+SPY_t <-  make_data(AXP)
+TRV_t <-  make_data(AXP)
+UNH_t <-  make_data(AXP)
+UTX_t <-  make_data(AXP)
+V_t < make_data(AXP, flag = 1)
+VZ_t <- make_data(AXP)
+WMT_t <-  make_data(AXP)
+XOM_t <-  make_data(AXP)
 ```
-
 ```{r}
-#below, the function make_data() is applied to all companies 
+clean_ticker <- clean_data(AXP)
+minute_list <- sort(unique(clean_ticker$Time))
+minute_df <- data.frame('Time' = minute_list) ##T
+dias <- unique(clean_ticker$Date)
 
-#for (i in clean_data) {
+n <- length(dias)
+j = 1 
 
- #  paste('tensor',i,sep="_") <- make_data(i)
+list <- vector(mode = "list", length =  n)
 
-#}
+df1 <- clean_ticker[clean_ticker$Date == dias[j],]
 
-tensor_AXP <- make_data(clean_data$AXP)
-tensor_BA <- make_data(clean_data$BA)
-tensor_CAT <- make_data(clean_data$CAT)
-tensor_CSCO <- make_data(clean_data$CSCO)
-tensor_CVX <- make_data(clean_data$CVX)
-tensor_DD <- make_data(clean_data$DD)
-tensor_DIS <- make_data(clean_data$DIS)
-tensor_GE <- make_data(clean_data$GE)
-tensor_GS <- make_data(clean_data$GS)
-tensor_HD <- make_data(clean_data$HD)
-tensor_IBM <- make_data(clean_data$IBM)
-tensor_INTC <- make_data(clean_data$INTC)
-tensor_JNJ <- make_data(clean_data$JNJ)
-tensor_JPM <- make_data(clean_data$JPM)
-tensor_KO <- make_data(clean_data$KO)
-tensor_MCD <- make_data(clean_data$MCD)
-tensor_MMM <- make_data(clean_data$MMM)
-tensor_MRK <- make_data(clean_data$MRK)
-tensor_MSFT <- make_data(clean_data$MSFT)
-tensor_NKE <- make_data(clean_data$NKE)
-tensor_PFE <- make_data(clean_data$PFE)
-tensor_PG <- make_data(clean_data$PG)
-tensor_SPY <- make_data(clean_data$SPY)
-tensor_TRV <- make_data(clean_data$TRV)
-tensor_UNH <- make_data(clean_data$UNH)
-tensor_UTX <- make_data(clean_data$UTX)
-tensor_V <- make_data(clean_data$V)
-tensor_VZ <- make_data(clean_data$VZ)
-tensor_WMT <- make_data(clean_data$WMT)
-tensor_XOM <- make_data(clean_data$XOM)
-
-
+df2 <- left_join(minute_df, df1, by = 'Time') ##This is the dataframe with all data for all possible minutes, whether they have observations that day or not
+list[[j]] <- vector(mode = 'list', length = 390) ##Creates the inner list
+minute = 1
+list[[j]][[minute]] <- vector(mode = 'list', length = 2)
+df_minute <- df2[df2$Time == minute_list[minute],]
+df_minute_minus <- df2[df2$Time == minute_list[minute-1],]##We open the dataframe minute by minute
+list[[j]][[minute]][[1]] <- df_minute$Open
+list[[j]][[minute]][[2]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
+      
+minute_df[1:1,]
+x <- sort(unique(clean_ticker$Time))
+x_df <- data.frame("Time" = x)
 ```
-
-
-
-
-
-

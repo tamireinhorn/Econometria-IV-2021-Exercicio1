@@ -136,10 +136,13 @@ tensor_axp_thomas[[1]][[3]]$Open
 ```{r}
 #below, the function make_data() is applied to all companies 
 
+<<<<<<< Updated upstream
 #tenson_clean_data <- lapply(clean_data, make_data)
 
 #or
 
+=======
+>>>>>>> Stashed changes
 #for (i in clean_data) {
 
    paste('tensor',i,sep="_") <- make_data_thomas(i)
