@@ -113,26 +113,33 @@ make_data_thomas <- function(ticker){
 }
 
 #testando para AXP
-make_data(clean_data$AXP)
+tensor_axp_thomas <- make_data_thomas(clean_data$AXP)
+tensor_axp_thomas[[1]][[3]]$Open
+tensor_axp_thomas[[1]][[3]][[4]]
+
 
 #below, the function make_data() is applied to all companies 
 
-lapply(clean_data, make_data)
+#lapply(clean_data, make_data)
 
 ```
 
 ```{r}
 
 make_data_tamir <- function(ticker){
+  
   ##So here's the deal: I want a list of dataframes, all with the same length of minutes.
   ##But i want every element of this list to be a list in itself: the first element is the DATE of the dataframe, the second is the dataframe itself. 
   ##Create a list of ALL existing minutes
+  
   minute_list <- sort(unique(ticker$Time))
   minute_df <- data.frame('Time' = minute_list) ##This df is      used only for the left join 
+  
   dias <- unique(ticker$Date)
   n <- length(dias)
   
  #we create a list for each day
+  
   list <- vector(mode = "list", length =  n)
   for(j in 1:n){
     day_df <- ticker[ticker$Date == dias[j],]
@@ -142,15 +149,50 @@ make_data_tamir <- function(ticker){
     
     for (minute in 1:390){ #Now we loop over all possible minutes, allowing each one to receive several economic variables}
       
-      inner_variable_list <- vector(mode = 'list', length = 2) ##This will have the length of all variables you want
-      names(inner_variable_list) <- c("Open", "Close")
-      list[[j]][[minute]] <- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next
+      inner_variable_list <- vector(mode = 'list', length = 9) ##This will have the length of all variables you want
+      names(inner_variable_list) <- c("Day", "Month", "Year", "Open", "Close", "Low", "High", "Volume","r_cc")
+      
+      
+      
+      list[[j]][[minute]] <- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next. Here, we explicit that list[[j]][[min]] is a list on its own.
+      
       df_minute <- adj_day_df[adj_day_df$Time == minute_list[minute],] ##We open the dataframe minute by minute
-      list[[j]][[minute]][[1]] <- df_minute$Open
-      list[[j]][[minute]][[2]] <- df_minute$Close
+      
+      
+      if (minute==1){
+       jif=0
+  }
+      else {
+       jif=1
+  }  
+        
+      df_minute_minus <- adj_day_df[adj_day_df$Time == minute_list[minute-jif],]
+      
+      list[[j]][[minute]][[1]] <- df_minute$format(df_minute$Date,'%d')
+      list[[j]][[minute]][[2]] <- df_minute$format(df_minute$Date,'%m')
+      list[[j]][[minute]][[3]] <- df_minute$format(df_minute$Date,'%y')
+      list[[j]][[minute]][[4]] <- df_minute$Open
+      list[[j]][[minute]][[5]] <- df_minute$Close
+      list[[j]][[minute]][[6]] <- df_minute$Low
+      list[[j]][[minute]][[7]] <- df_minute$High
+      list[[j]][[minute]][[8]] <- df_minute$Volume
+      list[[j]][[minute]][[9]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
     }
     
   }
   return(list)
 }
+
+#Testing make_data_tamir for certain company
+```
+
+```{r}
+
+tensor_axp_tamir <- make_data_tamir(clean_data$AXP)
+
+tensor_axp_tamir[[1]][[3]][[4]]
+
+#rodar às 30
+#mandar R.data
+
 ```
