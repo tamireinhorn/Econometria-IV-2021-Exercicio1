@@ -110,7 +110,7 @@ make_data <- function(ticker, flag = 0){
             list[[j]][[minute]][[6]] <- df_minute$Low
             list[[j]][[minute]][[7]] <- df_minute$High
             list[[j]][[minute]][[8]] <- df_minute$Volume
-            list[[j]][[minute]][[9]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
+            list[[j]][[minute]][[9]] <- log((df_minute$Close)/(df_minute_minus$Close)) ##Changed to be the log return.
                         }
       
                 }
