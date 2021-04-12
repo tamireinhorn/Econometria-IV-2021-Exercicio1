@@ -87,29 +87,45 @@ make_data <- function(ticker, flag = 0){
     adj_day_df <- left_join(minute_df, day_df, by = 'Time') ##This is the dataframe with all data for all possible minutes, whether they have observations that day or not
     list[[j]] <- vector(mode = 'list', length = 390) ##Creates the inner list
     for (minute in 1:390){ #Now we loop over all possible minutes
-      inner_variable_list <- vector(mode = 'list', length = 2) ##This will have the length of all variables you want
-      names(inner_variable_list) <- c("Open", "Close")
-      list[[j]][[minute]] <- inner_variable_list
-      df_minute <- df2[df2$Time == minute_list[minute],] ##We open the dataframe minute by minute
-      list[[j]][[minute]][[1]] <- df_minute$Open
-      list[[j]][[minute]][[2]] <- df_minute$Close
+            inner_variable_list <- vector(mode = 'list', length = 9) #This will have the length equal to number of variables of interest
+            names(inner_variable_list) <- c("Day", "Month", "Year", "Open", "Close", "Low", "High", "Volume","r_cc")
       
-    }
+            list[[j]][[minute]] <- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next. Here, we explicit that list[[j]][[min]] is a list on its own, by associating it with inner_variable_list, which is a list
+      
+            df_minute <- adj_day_df[adj_day_df$Time == minute_list[minute],] ##We open the dataframe minute by minute
+
+        
+            df_minute_minus <- adj_day_df[adj_day_df$Time == minute_list[minute-1],]
+      
+      #finally, a minute of day j is receiving relevant economic variables	      
+
+            list[[j]][[minute]][[1]] <- df_minute$format(df_minute$Date,'%d')
+            list[[j]][[minute]][[2]] <- df_minute$format(df_minute$Date,'%m')
+            list[[j]][[minute]][[3]] <- df_minute$format(df_minute$Date,'%y')
+            list[[j]][[minute]][[4]] <- df_minute$Open
+            list[[j]][[minute]][[5]] <- df_minute$Close
+            list[[j]][[minute]][[6]] <- df_minute$Low
+            list[[j]][[minute]][[7]] <- df_minute$High
+            list[[j]][[minute]][[8]] <- df_minute$Volume
+            list[[j]][[minute]][[9]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
+                        }
+      
+                }
     
-  }
+  
   return(list)
 }
 
 ```
 
 ```{r}
-
-a <- make_data(AXP)
+x <- 
 
 ```
 ```{r}
 clean_ticker <- clean_data(AXP)
-minute_df <- data.frame('Time' = unique(clean_ticker$Time))
+minute_list <- sort(unique(clean_ticker$Time))
+minute_df <- data.frame('Time' = minute_list) ##T
 dias <- unique(clean_ticker$Date)
 
 n <- length(dias)
@@ -123,9 +139,10 @@ df2 <- left_join(minute_df, df1, by = 'Time') ##This is the dataframe with all d
 list[[j]] <- vector(mode = 'list', length = 390) ##Creates the inner list
 minute = 1
 list[[j]][[minute]] <- vector(mode = 'list', length = 2)
-df_minute <- df2[df2$Time == minute_df[minute],] ##We open the dataframe minute by minute
+df_minute <- df2[df2$Time == minute_list[minute],]
+df_minute_minus <- df2[df2$Time == minute_list[minute-1],]##We open the dataframe minute by minute
 list[[j]][[minute]][[1]] <- df_minute$Open
-list[[j]][[minute]][[2]] <- df_minute$Close
+list[[j]][[minute]][[2]] <- (df_minute$Close - df_minute_minus$Close)/(df_minute_minus$Close)
       
 minute_df[1:1,]
 x <- sort(unique(clean_ticker$Time))
