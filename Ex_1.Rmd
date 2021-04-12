@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Exercise 1"
 output: html_notebook
 ---
 
@@ -20,25 +20,33 @@ First of all, we need to read all the files.
 library(readr)
 library(dplyr)
 AXP <- data.frame(read_csv('Data/AXP.txt', col_types = cols()))
+BA <- data.frame(read_csv('Data/BA.txt', col_types = cols()))
 CAT <- data.frame(read_csv('Data/CAT.txt', col_types = cols()))
 CSCO <- data.frame(read_csv('Data/CSCO.txt', col_types = cols()))
 CVX <- data.frame(read_csv('Data/CVX.txt', col_types = cols()))
 DD <- data.frame(read_csv('Data/DD.txt', col_types = cols()))
+DIS <- data.frame(read_csv('Data/DIS.txt', col_types = cols()))
 GE <- data.frame(read_csv('Data/GE.txt', col_types = cols()))
 GS <- data.frame(read_csv('Data/GS.txt', col_types = cols()))
 HD <- data.frame(read_csv('Data/HD.txt', col_types = cols()))
 IBM <- data.frame(read_csv('Data/IBM.txt', col_types = cols()))
+INTC <- data.frame(read_csv('Data/INTC.txt', col_types = cols()))
 JNJ <- data.frame(read_csv('Data/JNJ.txt', col_types = cols()))
 JPM <- data.frame(read_csv('Data/JPM.txt', col_types = cols()))
 KO <- data.frame(read_csv('Data/KO.txt', col_types = cols()))
 MCD <- data.frame(read_csv('Data/MCD.txt', col_types = cols()))
 MMM <- data.frame(read_csv('Data/MMM.txt', col_types = cols()))
+MRK <- data.frame(read_csv('Data/MRK.txt', col_types =  cols()))
 MSFT <- data.frame(read_csv('Data/MSFT.txt', col_types = cols()))
+NKE <- data.frame(read_csv('Data/NKE.txt', col_types =  cols()))
 PFE <- data.frame(read_csv('Data/PFE.txt', col_types = cols()))
+PG <- data.frame(read_csv('Data/PG.txt', col_types = cols()))
 SPY <- data.frame(read_csv('Data/SPY.txt', col_types = cols()))
 TRV <- data.frame(read_csv('Data/TRV.txt', col_types = cols()))
+UNH <- data.frame(read_csv('Data/UNH.txt', col_types =  cols()))
 UTX <- data.frame(read_csv('Data/UTX.txt', col_types = cols()))
 V <- data.frame(read_csv('Data/V.txt', col_types = cols()))
+VZ <- data.frame(read_csv('Data/VZ.txt', col_types = cols()))
 WMT <- data.frame(read_csv('Data/WMT.txt', col_types = cols()))
 XOM <- data.frame(read_csv('Data/XOM.txt', col_types = cols()))
 ```
