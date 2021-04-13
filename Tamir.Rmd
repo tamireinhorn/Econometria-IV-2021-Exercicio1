@@ -2,19 +2,26 @@
 title: "Exercise 1"
 output: html_notebook
 ---
+Loading packages is a must
+```{r}
+library(tidyverse)
+library(dplyr)
+library(tsibble)
+library(feasts)
+library(stringr)
+library(lubridate)
+library(anytime)
+library(ggplot2)
+library(ggthemes)
+library(knitr)
+library(kableExtra)
+library(DT)
+library(htmltools)
+library(reshape2) #to be used with tidyverse and gglopt2
+```
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
-
-First of all, we need to read all the files.
+First of all, we need to read all the files. This is my very lousy version.
 
 ```{r}
 library(readr)
@@ -53,21 +60,119 @@ XOM <- data.frame(read_csv('Data/XOM.txt', col_types = cols()))
 
 OK, so now we have these files, which are TOO BIG. Let's first clean the data to get it from 2000 onwards.
 ```{r}
-clean_data <- function(ticker,flag = 0) {
+clean_data <- function(ticker) {
   ##In this function, we're going to first convert the Date column to date:
-  if(flag == 0){
-     ticker$Date <- as.Date(ticker$Date, '%d/%m/%Y')
-  } else{ ##This is because V.txt has month and day swapped, i know who it is 
+ 
      ticker$Date <- as.Date(ticker$Date, '%m/%d/%Y')
-  }
+
   
   ## Then, we want to restrict it from 2000 onwards
      new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)
+     ##We need to make the left join first to create NA for all MINUTES
+     minute_list <- sort(unique(new_ticker$Time)) 
+     day_list <- sort(unique(new_ticker$Date))
+     minute_df <- data.frame('Time' = minute_list) ##I need a minute df
+     day_df <- data.frame('Date' = day_list) ##I need a day df
+     day_minute_df <- left_join(day_df, minute_df, character()) ##I create a df with all dates and all possible minutes
+     new_ticker <- left_join(day_minute_df, new_ticker, by = c('Time', 'Date')) ##Then we left join this bad boy and we're DONE
+     new_ticker$minute_return <- (new_ticker$Close - lag(new_ticker$Close))/ new_ticker$Close ##Return of level is p_t - p_{t-1} / p_{t-1}
+     new_ticker$minute_log_return <- log(new_ticker$Close) - log(lag(new_ticker$Close)) ##Log return: log(p_t) - log(p_{t-1})
+     
   return(new_ticker)
 }
 ```
 
 
+Now, let's clean ALL the data.
+```{r}
+AXP <- clean_data(AXP)
+BA <-clean_data(BA)
+CAT <- clean_data(CAT)
+CSCO <- clean_data(CSCO)
+CVX <- clean_data(CVX)
+DD <-clean_data(DD)
+DIS <- clean_data(DIS)
+GE <-clean_data(GE)
+GS <-clean_data(GS)
+HD <-clean_data(HD)
+IBM <- clean_data(IBM)
+INTC <- clean_data(INTC)
+JNJ <- clean_data(JNJ)
+JPM <- clean_data(JPM)
+KO <-clean_data(KO)
+MCD <- clean_data(MCD)
+MMM <- clean_data(MMM)
+MRK <-clean_data(MRK)
+MSFT <- clean_data(MSFT)
+NKE <-clean_data(NKE)
+PFE <- clean_data(PFE)
+PG <-clean_data(PG)
+SPY <- clean_data(SPY)
+TRV <- clean_data(TRV)
+UNH <-clean_data(UNH)
+UTX <- clean_data(UTX)
+V <- clean_data(V)
+VZ <-clean_data(VZ)
+WMT <- clean_data(WMT)
+XOM <- clean_data(XOM)
+```
+OK, now let's create our daily variables.
+
+```{r}
+AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
+##I'll turn this logic into a function and create daily dataframes for all of these tickers. 
+```
+Seeing that my handcrafted example works, it's time to make it into a proper function to create our daily dataframes
+```{r}
+make_daily_data <- function(clean_ticker){
+  daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
+  
+  
+}
+```
+Now, we apply this function for all tickers, just like before.
+```{r}
+daily_AXP <- make_daily_data(AXP)
+daily_BA <-make_daily_data(BA)
+daily_CAT <- make_daily_data(CAT)
+daily_CSCO <- make_daily_data(CSCO)
+daily_CVX <- make_daily_data(CVX)
+daily_DD <-make_daily_data(DD)
+daily_DIS <- make_daily_data(DIS)
+daily_GE <-make_daily_data(GE)
+daily_GS <-make_daily_data(GS)
+daily_HD <-make_daily_data(HD)
+daily_IBM <- make_daily_data(IBM)
+daily_INTC <- make_daily_data(INTC)
+daily_JNJ <- make_daily_data(JNJ)
+daily_JPM <- make_daily_data(JPM)
+daily_KO <-make_daily_data(KO)
+daily_MCD <- make_daily_data(MCD)
+daily_MMM <- make_daily_data(MMM)
+daily_MRK <-make_daily_data(MRK)
+daily_MSFT <- make_daily_data(MSFT)
+daily_NKE <-make_daily_data(NKE)
+daily_PFE <- make_daily_data(PFE)
+daily_PG <-make_daily_data(PG)
+daily_SPY <- make_daily_data(SPY)
+daily_TRV <- make_daily_data(TRV)
+daily_UNH <-make_daily_data(UNH)
+daily_UTX <- make_daily_data(UTX)
+daily_V <- make_daily_data(V)
+daily_VZ <-make_daily_data(VZ)
+daily_WMT <- make_daily_data(WMT)
+daily_XOM <- make_daily_data(XOM)
+```
+
+Now, for a simple plot:
+
+```{r}
+ggplot(daily_AXP, aes(x= 100* min(0.0001,RV))) + geom_histogram(bins = 1000) 
+```
+
+
+
+This was the very stupid function we tried to make work, but honestly, this is useless.
 ```{r}
 library(dplyr)
 
