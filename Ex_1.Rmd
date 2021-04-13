@@ -95,20 +95,20 @@ clean_df %>% group_by(Stock, Date) %>%
 ```{r}
 #An object rv will be created, containing volumes and close_to_close returns
 
-rv <- clean_data %>% 
+measures <- clean_data %>% 
   
   group_by(Stock, Date) %>% #formulas below will be applied for the same stock between dates 
   
   mutate(r_cc = log(Close) - lag(log(Close))) %>% #this creates a column where, for a stock at a certain minute of a day, the rate of change of the closing price with respect to that price in the previous minute is returned?
   
-  summarise(RV = sum(r_cc^2, na.rm = T), VOL = sum(Volume)) %>% #for each stock and day we obtain two variables: RV, which is the accumulated squared closed-to-closed returns, and VOL, which sums the volumes of the minutes of that day. 
+  summarise(daily=sum(r_cc,na.rm=T), RV = sum(r_cc^2, na.rm = T), VOL = sum(Volume)) %>% #for each stock and day we obtain three variables: daily, which is the accumulated closed-to-closed returns, RV, which is the accumulated SQUARED closed-to-closed returns, and VOL, which sums the volumes of the minutes of that day. 
   
   ungroup() #Avoids potential unintended errors due to the grouping
 
 #we use dcast() to take a look in the RV. LHS variable values will be in rows. RHS variables values will become column names. fun.aggregate(value.var) will be cell values. datatable() is then a table made to contain values from dcast()
 #dcast() is a long-to-wide reshapping tool, while melt() is wide-to-long
 
-rv_wide <- rv %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
+measures_wide <- measures %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
 
 datatable(cbind(Date = rv_wide[,1], round(RV_wide[,1:30],5)), #we round the numbers to contain 5 digits
           
@@ -117,18 +117,22 @@ datatable(cbind(Date = rv_wide[,1], round(RV_wide[,1:30],5)), #we round the numb
           options = list(scrollX = T))
 
 #we want it to be 30 (assets) and 4310 days
-dim(rv_wide) 
+dim(measures_wide) 
 
 #we want to check missing values per stock 
-rv_na <- rv %>%
+measures_na <- measures %>%
   group_by(Stock) %>%
   summarise (na_stock=sum(is.na)) %>%
   ungroup()
 ```
 
-3.3 HISTOGRAMS
+3.3 HISTOGRAMS checar
 
 ```{r}
-
+measures %>% 
+  group_by(Asset, Date) %>% 
+  mutate(RV = 100*min(RV, 0.001)) %>%
+  nest(data = c(RV, Volume, Date)) %>% 
+  mutate(y = map(data, ~ dnorm(.$RV, mean = mean(.$RV), sd = sd(.$RV)) * 0.001 * sum(!is.na(.$RV)))) %>% 
 
 ```
