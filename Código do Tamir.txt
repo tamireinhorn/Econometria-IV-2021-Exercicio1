@@ -68,7 +68,7 @@ for (i in 1:length(stock_list)) {
 names(stock_list) <- stock_name
 ```
 
-A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks:
+A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:
 
 ```{r}
 
@@ -77,13 +77,12 @@ AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = 
 
 ##This logic will be turned into a function that creates daily dataframes for all of the tickers
 
-Seeing that my handcrafted example works, it's time to make it into a proper function to create our daily dataframes
-
 make_daily_data <- function(clean_ticker){
   daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
   #return(daily_ticker)
 }
 ```
+
 Now, we apply this function for all tickers, just like before.
 
 ```{r}
@@ -97,72 +96,3 @@ for (i in 1:length(stock_list)) {
 }
 names(daily_stock_list) <- stock_name
 ```
-
-3. DESCRIPTIVE ANALYSIS
-
-Now, for a simple plot:
-
-```{r}
-plot_list<- vector(mode = 'list', length = 30)
-for(stock in daily_stock_list){
- #plot <- ggplot(stock, aes(x = RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", stock_name[stock],sep = ""))
- plot_list[stock] <- plot
-}
-
-```
-
-Testing out this package that groups graphs. 
-
-```{r}
-data("ToothGrowth")
-head(ToothGrowth)
-mtcars$name <- rownames(mtcars)
-mtcars$cyl <- as.factor(mtcars$cyl)
-bxp <- ggboxplot(ToothGrowth, x = "dose", y = "len",
-                 color = "dose", palette = "jco") + labs(title = 'bolinh')
-
-# Dot plot (dp)
-dp <- ggdotplot(ToothGrowth, x = "dose", y = "len",
-                 color = "dose", palette = "jco", binwidth = 1)
-bp <- ggbarplot(mtcars, x = "name", y = "mpg",
-          fill = "cyl",               # change fill color by cyl
-          color = "white",            # Set bar border colors to white
-          palette = "jco",            # jco journal color palett. see ?ggpar
-          sort.val = "asc",           # Sort the value in ascending order
-          sort.by.groups = TRUE,      # Sort inside each group
-          x.text.angle = 90           # Rotate vertically x axis texts
-          )
-
-# Scatter plots (sp)
-sp <- ggscatter(mtcars, x = "wt", y = "mpg",
-                add = "reg.line",               # Add regression line
-                conf.int = TRUE,                # Add confidence interval
-                color = "cyl", palette = "jco", # Color by groups "cyl"
-                shape = "cyl"                   # Change point shape by groups "cyl"
-                )+
-  stat_cor(aes(color = cyl), label.x = 3)       # Add correlation coefficient
-ggarrange(bxp, dp, bp + rremove("x.text"), 
-          labels = c("A", "B", "C"),
-          ncol = 2, nrow = 2)
-```
-sss
-```{r}
-plot_list <- vector(mode = 'list', length = length(daily_stock_list))
-for(i in 1:length(daily_stock_list)){
-  title <- paste("RV Histogram for", stock_name[i])
-  normal <- data.frame('Normal' = rnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-  plot <- ggplot(data = daily_stock_list[[i]], aes(x = RV)) + labs(x = 'RV %', title = title, y= "") + geom_histogram(bins = 100) +
-    geom_line(data = normal)
-  plot_list[[i]] <- plot
-}
-
-```
-Let's try plotting them all together
-```{r}
-#ggarrange(plotlist = plot_list, ncol = 5, nrow = 3)
-qplot(dnorm(daily_stock_list[[i]]$RV, mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-normal <- data.frame(dnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-ggplot(normal, aes(x = Normal)) + geom_line()
-```
-
-

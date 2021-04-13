@@ -68,16 +68,14 @@ for (i in 1:length(stock_list)) {
 names(stock_list) <- stock_name
 ```
 
-A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks:
+A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:
 
 ```{r}
 
 #First for AXP, to understand the logic
-AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
+#AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
 
 ##This logic will be turned into a function that creates daily dataframes for all of the tickers
-
-#Seeing that the handcrafted example works, it's time to make it into a proper function to create our daily dataframes
 
 make_daily_data <- function(clean_ticker){
   daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
@@ -97,17 +95,29 @@ for (i in 1:length(stock_list)) {
   
 }
 names(daily_stock_list) <- stock_name
+
+str(daily_stock_list[1])
+head(daily_stock_list[1],n=5)
+
 ```
 
 
 Now, for a simple plot:
 
 ```{r}
-plot_list<- vector(mode = 'list', length = 30)
+plot_list <- vector(mode = 'list', length = 30)
+
+
 for(stock in daily_stock_list){
- #plot <- ggplot(stock, aes(x = RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", stock_name[stock],sep = ""))
+ plot <- ggplot(stock, aes(x = RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", stock_name_v[stock],sep = ""))
  plot_list[stock] <- plot
 }
+
+daily_stock_list_1_df <- as.data.frame(daily_stock_list[1])
+
+plot <- ggplot(daily_stock_list_1_df, aes(x = AXP.RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", "AXP",sep = ""))
+
+plot
 
 ```
 Testing out this package that groups graphs. 
