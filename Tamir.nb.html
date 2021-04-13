@@ -364,39 +364,35 @@ names(stock_list) &lt;- stock_name</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks:</p>
+<p>A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jRmlyc3QgZm9yIEFYUCwgdG8gdW5kZXJzdGFuZCB0aGUgbG9naWNcbkFYUCAlPiUgZ3JvdXBfYnkoRGF0ZSkgJT4lIHN1bW1hcmlzZShkYWlseT1zdW0obWludXRlX2xvZ19yZXR1cm4sbmEucm09VCksIFJWID0gc3VtKG1pbnV0ZV9sb2dfcmV0dXJuXjIsIG5hLnJtID0gVCksIFZPTCA9IHN1bShWb2x1bWUsIG5hLnJtID0gVCksIGxvZ19SViA9IGxvZyhzdW0obWludXRlX2xvZ19yZXR1cm5eMiwgbmEucm0gPSBUKSkgKSAjI1RoaXMgd29ya3MgYXMgaW50ZW5kZWQsIGp1c3QgY3JlYXRlcyBvdXIgZGFpbHkgZGF0YWZyYW1lLiBUaGVyZWZvcmVcblxuIyNUaGlzIGxvZ2ljIHdpbGwgYmUgdHVybmVkIGludG8gYSBmdW5jdGlvbiB0aGF0IGNyZWF0ZXMgZGFpbHkgZGF0YWZyYW1lcyBmb3IgYWxsIG9mIHRoZSB0aWNrZXJzXG5cbiNTZWVpbmcgdGhhdCB0aGUgaGFuZGNyYWZ0ZWQgZXhhbXBsZSB3b3JrcywgaXQncyB0aW1lIHRvIG1ha2UgaXQgaW50byBhIHByb3BlciBmdW5jdGlvbiB0byBjcmVhdGUgb3VyIGRhaWx5IGRhdGFmcmFtZXNcblxubWFrZV9kYWlseV9kYXRhIDwtIGZ1bmN0aW9uKGNsZWFuX3RpY2tlcil7XG4gIGRhaWx5X3RpY2tlciA8LSBjbGVhbl90aWNrZXIgJT4lIGdyb3VwX2J5KERhdGUpICU+JSBzdW1tYXJpc2UoZGFpbHk9c3VtKG1pbnV0ZV9sb2dfcmV0dXJuLG5hLnJtPVQpLCBSViA9IHN1bShtaW51dGVfbG9nX3JldHVybl4yLCBuYS5ybSA9IFQpLCBWT0wgPSBzdW0oVm9sdW1lLCBuYS5ybSA9IFQpLCBsb2dfUlYgPSBsb2coc3VtKG1pbnV0ZV9sb2dfcmV0dXJuXjIsIG5hLnJtID0gVCkpIClcbiAgI3JldHVybihkYWlseV90aWNrZXIpXG59XG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuXG4jRmlyc3QgZm9yIEFYUCwgdG8gdW5kZXJzdGFuZCB0aGUgbG9naWNcbkFYUCAlPiUgZ3JvdXBfYnkoRGF0ZSkgJT4lIHN1bW1hcmlzZShkYWlseT1zdW0obWludXRlX2xvZ19yZXR1cm4sbmEucm09VCksIFJWID0gc3VtKG1pbnV0ZV9sb2dfcmV0dXJuXjIsIG5hLnJtID0gVCksIFZPTCA9IHN1bShWb2x1bWUsIG5hLnJtID0gVCksIGxvZ19SViA9IGxvZyhzdW0obWludXRlX2xvZ19yZXR1cm5eMiwgbmEucm0gPSBUKSkgKSAjI1RoaXMgd29ya3MgYXMgaW50ZW5kZWQsIGp1c3QgY3JlYXRlcyBvdXIgZGFpbHkgZGF0YWZyYW1lLiBUaGVyZWZvcmVcbmBgYCJ9 -->
 <pre class="r"><code>
 #First for AXP, to understand the logic
-AXP %&gt;% group_by(Date) %&gt;% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
-
-##This logic will be turned into a function that creates daily dataframes for all of the tickers
-
-#Seeing that the handcrafted example works, it&#39;s time to make it into a proper function to create our daily dataframes
-
-make_daily_data &lt;- function(clean_ticker){
-  daily_ticker &lt;- clean_ticker %&gt;% group_by(Date) %&gt;% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
-  #return(daily_ticker)
-}</code></pre>
+AXP %&gt;% group_by(Date) %&gt;% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gZ3JvdXBfYnkoLiwgRGF0ZSkgOiBvYmplY3QgJ0FYUCcgbm90IGZvdW5kXG4ifQ== -->
+<pre><code>Error in group_by(., Date) : object &#39;AXP&#39; not found</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>Now, we apply this function for all tickers, just like before.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGFpbHlfc3RvY2tfbGlzdCA8LSB2ZWN0b3IobW9kZSA9ICdsaXN0JywgbGVuZ3RoID0gMzApICMjSW5pdGlhbGl6ZSB0aGUgZGFpbHkgc3RvY2sgbGlzdC5cblxuZm9yIChpIGluIDE6bGVuZ3RoKHN0b2NrX2xpc3QpKSB7XG5cbiAgZGFpbHlfc3RvY2tfZGYgPC0gbWFrZV9kYWlseV9kYXRhKHN0b2NrX2xpc3RbW2ldXSlcbiAgZGFpbHlfc3RvY2tfbGlzdFtbaV1dIDwtIGRhaWx5X3N0b2NrX2RmWyxdXG4gIFxufVxubmFtZXMoZGFpbHlfc3RvY2tfbGlzdCkgPC0gc3RvY2tfbmFtZVxuYGBgIn0= -->
-<pre class="r"><code>daily_stock_list &lt;- vector(mode = &#39;list&#39;, length = 30) ##Initialize the daily stock list.
-
-for (i in 1:length(stock_list)) {
-
-  daily_stock_df &lt;- make_daily_data(stock_list[[i]])
-  daily_stock_list[[i]] &lt;- daily_stock_df[,]
-  
-}
-names(daily_stock_list) &lt;- stock_name</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3RyKGRhaWx5X3N0b2NrX2xpc3RbMV0pXG5cbmBgYCJ9 -->
+<pre class="r"><code>str(daily_stock_list[1])
+</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTGlzdCBvZiAxXG4gJCBBWFA6IHRpYmJsZVssNV0gWzQsMzEwIHggNV0gKFMzOiB0YmxfZGYvdGJsL2RhdGEuZnJhbWUpXG4gIC4uJCBEYXRlICA6IERhdGVbMTo0MzEwXSwgZm9ybWF0OiBcIjIwMDAtMDEtMDNcIiAuLi5cbiAgLi4kIGRhaWx5IDogbnVtIFsxOjQzMTBdIC0wLjA0NjEgLTAuMDE5NiAtMC4wMiAwLjAyODkgMC4wMTI4IC4uLlxuICAuLiQgUlYgICAgOiBudW0gWzE6NDMxMF0gMC4wMDA1MTUgMC4wMDA1NjkgMC4wMDA2NzkgMC4wMDA0NDggMC4wMDAzODkgLi4uXG4gIC4uJCBWT0wgICA6IG51bSBbMTo0MzEwXSA1NjA3NDcxIDkyMjM5MDIgNzcwODAyNCAxMDE2NjczOCA1NTcxNDg5IC4uLlxuICAuLiQgbG9nX1JWOiBudW0gWzE6NDMxMF0gLTcuNTcgLTcuNDcgLTcuMjkgLTcuNzEgLTcuODUgLi4uXG4ifQ== -->
+<pre><code>List of 1
+ $ AXP: tibble[,5] [4,310 x 5] (S3: tbl_df/tbl/data.frame)
+  ..$ Date  : Date[1:4310], format: &quot;2000-01-03&quot; ...
+  ..$ daily : num [1:4310] -0.0461 -0.0196 -0.02 0.0289 0.0128 ...
+  ..$ RV    : num [1:4310] 0.000515 0.000569 0.000679 0.000448 0.000389 ...
+  ..$ VOL   : num [1:4310] 5607471 9223902 7708024 10166738 5571489 ...
+  ..$ log_RV: num [1:4310] -7.57 -7.47 -7.29 -7.71 -7.85 ...</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p>As suggested, we should try creating one giant dataframe in order to use facet_wrap and plot everything at once.</p>
