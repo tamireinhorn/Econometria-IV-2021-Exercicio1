@@ -77,14 +77,13 @@ AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = 
 
 ##This logic will be turned into a function that creates daily dataframes for all of the tickers
 
-#Seeing that the handcrafted example works, it's time to make it into a proper function to create our daily dataframes
+Seeing that my handcrafted example works, it's time to make it into a proper function to create our daily dataframes
 
 make_daily_data <- function(clean_ticker){
   daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
   #return(daily_ticker)
 }
 ```
-
 Now, we apply this function for all tickers, just like before.
 
 ```{r}
@@ -99,6 +98,7 @@ for (i in 1:length(stock_list)) {
 names(daily_stock_list) <- stock_name
 ```
 
+3. DESCRIPTIVE ANALYSIS
 
 Now, for a simple plot:
 
@@ -110,7 +110,9 @@ for(stock in daily_stock_list){
 }
 
 ```
+
 Testing out this package that groups graphs. 
+
 ```{r}
 data("ToothGrowth")
 head(ToothGrowth)
