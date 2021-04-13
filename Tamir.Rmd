@@ -1,6 +1,8 @@
 ---
 title: "Exercise 1"
 output: html_notebook
+fig_width: 6 
+fig_height: 4 
 ---
 LOADING PACKAGES:
 
@@ -98,18 +100,26 @@ for (i in 1:length(stock_list)) {
 }
 names(daily_stock_list) <- stock_name
 ```
+As suggested, we should try creating one giant dataframe in order to use facet_wrap and plot everything at once.
+
+```{r}
+complete_daily_df <- bind_rows(daily_stock_list, .id = "column_label")
+##I just want the name to be Stock:
+names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
+```
 
 
 Now, for a simple plot:
 
-```{r}
-plot_list<- vector(mode = 'list', length = 30)
-for(stock in daily_stock_list){
- #plot <- ggplot(stock, aes(x = RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", stock_name[stock],sep = ""))
- plot_list[stock] <- plot
-}
+```{r fig.height = 12, fig.width = 10}
+ggplot(complete_daily_df, aes(x = RV)) +
+  geom_histogram(binwidth = 0.0001) +
+  labs(title = "RV Histograms", x = "", y = "") +
+  facet_wrap(~ Stock, ncol = 2) +
+  theme_minimal()
 
 ```
+
 Testing out this package that groups graphs. 
 ```{r}
 data("ToothGrowth")
@@ -145,15 +155,18 @@ ggarrange(bxp, dp, bp + rremove("x.text"),
 ```
 sss
 ```{r}
-plot_list <- vector(mode = 'list', length = length(daily_stock_list))
-for(i in 1:length(daily_stock_list)){
-  title <- paste("RV Histogram for", stock_name[i])
-  normal <- data.frame(dnorm(daily_stock_list[[i]]$RV, mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-  plot <- ggplot(data = daily_stock_list[[i]], aes(x = RV)) + labs(x = 'RV %', title = title, y= "") + geom_histogram(bins = 100) +
-    geom_line(data = normal)
-  plot_list[[i]] <- plot
-}
-plot_list[[i]]
+complete_daily_df %>% 
+  group_by(Stock, Date) %>% 
+  mutate(RV = 100*min(RV, 0.001)) %>%
+  nest(data = c(RV, VOL, Date)) %>% 
+  mutate(y = map(data, ~ dnorm(.$RV, mean = mean(.$RV), sd = sd(.$RV)) * 0.001 * sum(!is.na(.$RV)))) %>% 
+  unnest(c(data,y)) %>% 
+  ggplot(aes(x = RV)) +
+  geom_histogram(binwidth = 0.001) +
+  geom_line(aes(y = y, color = 'red')) +
+  facet_wrap(~ Asset, ncol = 4, scales = 'free') +
+  labs(x = "", y = "", title = 'Realized Volatility Histograms (in percentage terms, %)', subtitle = 'Normal density in red') +
+  theme_bw() + theme(legend.position = "none")
 ```
 Let's try plotting them all together
 ```{r}
@@ -163,3 +176,10 @@ g <- ggplot(daily_stock_list[[i]], aes(x = RV))  + geom_histogram(aes(y = ..dens
 ## On primary axis
 
 ```
+
+I want to test the solutions to plot a normal distribution for ONE of the RV series we have.
+
+```{r}
+i
+```
+
