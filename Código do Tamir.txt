@@ -1,0 +1,98 @@
+---
+title: "Exercise 1"
+output: html_notebook
+---
+LOADING PACKAGES:
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(tsibble)
+library(feasts)
+library(stringr)
+library(lubridate)
+library(anytime)
+library(ggplot2)
+library(ggthemes)
+library(knitr)
+library(kableExtra)
+library(DT)
+library(htmltools)
+library(reshape2) #to be used with tidyverse and gglopt2
+library(ggpubr)
+```
+
+2. DATA PREPARATION
+
+The function clean_data will be created to clean the files, and it will be applied in the second chunk of the code, in which we will import the files.
+
+```{r}
+clean_data <- function(ticker) {
+
+  ##In this function, we're going to first convert the Date column to date:
+ 
+     ticker$Date <- as.Date(ticker$Date, '%m/%d/%Y')
+  
+  ## Then, we want to restrict it from 2000 onwards
+
+     new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)
+
+     ##We need all days to contain the same number ofminutes, so we will use the left_join command first ensure that, and also to create NA for all MINUTES for which certain stocks do not have data.
+     
+     minute_list <- sort(unique(new_ticker$Time)) 
+     day_list <- sort(unique(new_ticker$Date))
+     minute_df <- data.frame('Time' = minute_list) ##A minute df is needed for the left_join() to be applied
+     day_df <- data.frame('Date' = day_list) ##A day df is needed for the left_join() to be applied
+     day_minute_df <- left_join(day_df, minute_df, character()) ##A df is created in which all 390 possible minutes were joined into each possible day
+     new_ticker <- left_join(day_minute_df, new_ticker, by = c('Time', 'Date')) ##Then we left join all the informations in the new ticker into the day_minute df, uniformising all dates for all stocks in number of minutes
+     new_ticker$minute_return <- (new_ticker$Close - lag(new_ticker$Close))/ new_ticker$Close ##Return taken on levels: p_t - p_{t-1} / p_{t-1}
+     new_ticker$minute_log_return <- log(new_ticker$Close) - log(lag(new_ticker$Close)) ##Log return: log(p_t) - log(p_{t-1})
+     
+  return(new_ticker)
+}
+```
+
+Given the clean_data() function above, we will now jointly import and clean the data (alternatively, we could have importer everything, then created the cleaning function and then have applied it, using three different chunks). 
+
+
+```{r}
+files_list <- list.files('Data')
+stock_name <- str_remove(files_list, ".txt")
+stock_list <- vector(mode = "list", length = 30) ##Initialize the stock list.
+for (i in 1:length(stock_list)) {
+  stock_df <- data.frame(read_csv(paste('Data/',files_list[i], sep = ""), col_types = cols())) 
+  clean_stock_df <- clean_data(stock_df)
+  stock_list[[i]] <- clean_stock_df[,]
+}
+
+names(stock_list) <- stock_name
+```
+
+A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:
+
+```{r}
+
+#First for AXP, to understand the logic
+AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
+
+##This logic will be turned into a function that creates daily dataframes for all of the tickers
+
+make_daily_data <- function(clean_ticker){
+  daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
+  #return(daily_ticker)
+}
+```
+
+Now, we apply this function for all tickers, just like before.
+
+```{r}
+daily_stock_list <- vector(mode = 'list', length = 30) ##Initialize the daily stock list.
+
+for (i in 1:length(stock_list)) {
+
+  daily_stock_df <- make_daily_data(stock_list[[i]])
+  daily_stock_list[[i]] <- daily_stock_df[,]
+  
+}
+names(daily_stock_list) <- stock_name
+```

@@ -220,152 +220,117 @@ pre code {
 <p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
 <p>When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the <em>Preview</em> button or press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
 <p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
-<p>First of all, we need to read all the files.</p>
+<p>INTRODUCTION</p>
+<ol start="2" style="list-style-type: decimal">
+<li>DATA PREPARATION</li>
+</ol>
+<p>2.1 LOADING PREVIOUSLY INSTALLED PACKAGES</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkoZHBseXIpXG5BWFAgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9BWFAudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbkJBIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvQkEudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbkNBVCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NBVC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuQ1NDTyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NTQ08udHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbkNWWCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NWWC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuREQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9ERC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuRElTIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvRElTLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5HRSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0dFLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5HUyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0dTLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5IRCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0hELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5JQk0gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9JQk0udHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbklOVEMgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9JTlRDLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5KTkogPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9KTkoudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbkpQTSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0pQTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuS08gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9LTy50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuTUNEIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvTUNELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5NTU0gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9NTU0udHh0JywgY29sX3R5cGVzID0gY29scygpKSlcbk1SSyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL01SSy50eHQnLCBjb2xfdHlwZXMgPSAgY29scygpKSlcbk1TRlQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9NU0ZULnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5OS0UgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9OS0UudHh0JywgY29sX3R5cGVzID0gIGNvbHMoKSkpXG5QRkUgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9QRkUudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcblBHIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvUEcudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcblNQWSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1NQWS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuVFJWIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvVFJWLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5VTkggPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9VTkgudHh0JywgY29sX3R5cGVzID0gIGNvbHMoKSkpXG5VVFggPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9VVFgudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcblYgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9WLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5WWiA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1ZaLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpXG5XTVQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9XTVQudHh0JywgY29sX3R5cGVzID0gY29scygpKSlcblhPTSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1hPTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKVxuYGBgIn0= -->
-<pre class="r"><code>library(readr)
-library(dplyr)
-AXP &lt;- data.frame(read_csv(&#39;Data/AXP.txt&#39;, col_types = cols()))
-BA &lt;- data.frame(read_csv(&#39;Data/BA.txt&#39;, col_types = cols()))
-CAT &lt;- data.frame(read_csv(&#39;Data/CAT.txt&#39;, col_types = cols()))
-CSCO &lt;- data.frame(read_csv(&#39;Data/CSCO.txt&#39;, col_types = cols()))
-CVX &lt;- data.frame(read_csv(&#39;Data/CVX.txt&#39;, col_types = cols()))
-DD &lt;- data.frame(read_csv(&#39;Data/DD.txt&#39;, col_types = cols()))
-DIS &lt;- data.frame(read_csv(&#39;Data/DIS.txt&#39;, col_types = cols()))
-GE &lt;- data.frame(read_csv(&#39;Data/GE.txt&#39;, col_types = cols()))
-GS &lt;- data.frame(read_csv(&#39;Data/GS.txt&#39;, col_types = cols()))
-HD &lt;- data.frame(read_csv(&#39;Data/HD.txt&#39;, col_types = cols()))
-IBM &lt;- data.frame(read_csv(&#39;Data/IBM.txt&#39;, col_types = cols()))
-INTC &lt;- data.frame(read_csv(&#39;Data/INTC.txt&#39;, col_types = cols()))
-JNJ &lt;- data.frame(read_csv(&#39;Data/JNJ.txt&#39;, col_types = cols()))
-JPM &lt;- data.frame(read_csv(&#39;Data/JPM.txt&#39;, col_types = cols()))
-KO &lt;- data.frame(read_csv(&#39;Data/KO.txt&#39;, col_types = cols()))
-MCD &lt;- data.frame(read_csv(&#39;Data/MCD.txt&#39;, col_types = cols()))
-MMM &lt;- data.frame(read_csv(&#39;Data/MMM.txt&#39;, col_types = cols()))
-MRK &lt;- data.frame(read_csv(&#39;Data/MRK.txt&#39;, col_types =  cols()))
-MSFT &lt;- data.frame(read_csv(&#39;Data/MSFT.txt&#39;, col_types = cols()))
-NKE &lt;- data.frame(read_csv(&#39;Data/NKE.txt&#39;, col_types =  cols()))
-PFE &lt;- data.frame(read_csv(&#39;Data/PFE.txt&#39;, col_types = cols()))
-PG &lt;- data.frame(read_csv(&#39;Data/PG.txt&#39;, col_types = cols()))
-SPY &lt;- data.frame(read_csv(&#39;Data/SPY.txt&#39;, col_types = cols()))
-TRV &lt;- data.frame(read_csv(&#39;Data/TRV.txt&#39;, col_types = cols()))
-UNH &lt;- data.frame(read_csv(&#39;Data/UNH.txt&#39;, col_types =  cols()))
-UTX &lt;- data.frame(read_csv(&#39;Data/UTX.txt&#39;, col_types = cols()))
-V &lt;- data.frame(read_csv(&#39;Data/V.txt&#39;, col_types = cols()))
-VZ &lt;- data.frame(read_csv(&#39;Data/VZ.txt&#39;, col_types = cols()))
-WMT &lt;- data.frame(read_csv(&#39;Data/WMT.txt&#39;, col_types = cols()))
-XOM &lt;- data.frame(read_csv(&#39;Data/XOM.txt&#39;, col_types = cols()))</code></pre>
-<!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>OK, so now we have these files, which are TOO BIG. Let’s first clean the data to get it from 2000 onwards.</p>
+<p>2.2 IMPORTING AND CLEANING THE DATA</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xlYW5fZGF0YSA8LSBmdW5jdGlvbih0aWNrZXIsZmxhZyA9IDApIHtcbiAgIyNJbiB0aGlzIGZ1bmN0aW9uLCB3ZSdyZSBnb2luZyB0byBmaXJzdCBjb252ZXJ0IHRoZSBEYXRlIGNvbHVtbiB0byBkYXRlOlxuICBpZihmbGFnID09IDApe1xuICAgICB0aWNrZXIkRGF0ZSA8LSBhcy5EYXRlKHRpY2tlciREYXRlLCAnJWQvJW0vJVknKVxuICB9IGVsc2V7ICMjVGhpcyBpcyBiZWNhdXNlIFYudHh0IGhhcyBtb250aCBhbmQgZGF5IHN3YXBwZWQsIGkga25vdyB3aG8gaXQgaXMgXG4gICAgIHRpY2tlciREYXRlIDwtIGFzLkRhdGUodGlja2VyJERhdGUsICclbS8lZC8lWScpXG4gIH1cbiAgXG4gICMjIFRoZW4sIHdlIHdhbnQgdG8gcmVzdHJpY3QgaXQgZnJvbSAyMDAwIG9ud2FyZHNcbiAgICAgbmV3X3RpY2tlciA8LSBmaWx0ZXIodGlja2VyLCBmb3JtYXQodGlja2VyJERhdGUsICclWScpID49IDIwMDApXG4gIHJldHVybihuZXdfdGlja2VyKVxufVxuYGBgIn0= -->
-<pre class="r"><code>clean_data &lt;- function(ticker,flag = 0) {
-  ##In this function, we&#39;re going to first convert the Date column to date:
-  if(flag == 0){
-     ticker$Date &lt;- as.Date(ticker$Date, &#39;%d/%m/%Y&#39;)
-  } else{ ##This is because V.txt has month and day swapped, i know who it is 
-     ticker$Date &lt;- as.Date(ticker$Date, &#39;%m/%d/%Y&#39;)
-  }
-  
-  ## Then, we want to restrict it from 2000 onwards
-     new_ticker &lt;- filter(ticker, format(ticker$Date, &#39;%Y&#39;) &gt;= 2000)
-  return(new_ticker)
-}</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcblxubWFrZV9kYXRhIDwtIGZ1bmN0aW9uKHRpY2tlciwgZmxhZyA9IDApe1xuICAjI1NvIGhlcmUncyB0aGUgZGVhbDogSSB3YW50IGEgbGlzdCBvZiBkYXRhZnJhbWVzLCBhbGwgd2l0aCB0aGUgc2FtZSBsZW5ndGggb2YgbWludXRlcy5cbiAgIyNCdXQgaSB3YW50IGV2ZXJ5IGVsZW1lbnQgb2YgdGhpcyBsaXN0IHRvIGJlIGEgbGlzdCBpbiBpdHNlbGY6IHRoZSBmaXJzdCBlbGVtZW50IGlzIHRoZSBEQVRFIG9mIHRoZSBkYXRhZnJhbWUsIHRoZSBzZWNvbmQgaXMgdGhlIGRhdGFmcmFtZSBpdHNlbGYuIFxuICBjbGVhbl90aWNrZXIgPC0gY2xlYW5fZGF0YSh0aWNrZXIsIGZsYWcpXG4gICMjQ3JlYXRlIGEgbGlzdCBvZiBBTEwgZXhpc3RpbmcgbWludXRlc1xuICBtaW51dGVfbGlzdCA8LSBzb3J0KHVuaXF1ZShjbGVhbl90aWNrZXIkVGltZSkpXG4gIG1pbnV0ZV9kZiA8LSBkYXRhLmZyYW1lKCdUaW1lJyA9IG1pbnV0ZV9saXN0KSAjI1RoaXMgZGYgaXMgICAgICB1c2VkIG9ubHkgZm9yIHRoZSBsZWZ0IGpvaW4gXG4gIGRpYXMgPC0gdW5pcXVlKGNsZWFuX3RpY2tlciREYXRlKVxuICBuIDwtIGxlbmd0aChkaWFzKVxuICMjIGFyciA8LSBhcnJheShOQSwgZGltID0gYygzOTAsIGRpbShjbGVhbl90aWNrZXIpWzJdLCBuKSkgZGVwcmVjYXRlZFxuICBsaXN0IDwtIHZlY3Rvcihtb2RlID0gXCJsaXN0XCIsIGxlbmd0aCA9ICBuKVxuICBuYW1lcyhsaXN0KSA8LSBkaWFzICMjSSBhbHNvIHdhbnQgdG8gTkFNRSB0aGUgZWxlbWVudHMgb2YgdGhlIGxpc3QgdG8ga25vdyB3aGljaCBkYXRlIGl0IGlzLlxuICBmb3IoaiBpbiAxOm4pe1xuICAgIGRheV9kZiA8LSBjbGVhbl90aWNrZXJbY2xlYW5fdGlja2VyJERhdGUgPT0gZGlhc1tqXSxdXG4gICAgYWRqX2RheV9kZiA8LSBsZWZ0X2pvaW4obWludXRlX2RmLCBkYXlfZGYsIGJ5ID0gJ1RpbWUnKSAjI1RoaXMgaXMgdGhlIGRhdGFmcmFtZSB3aXRoIGFsbCBkYXRhIGZvciBhbGwgcG9zc2libGUgbWludXRlcywgd2hldGhlciB0aGV5IGhhdmUgb2JzZXJ2YXRpb25zIHRoYXQgZGF5IG9yIG5vdFxuICAgIGlubmVyX2xpc3QgPC0gIHZlY3Rvcihtb2RlID0gJ2xpc3QnLCBsZW5ndGggPSAzOTApICAjI0NyZWF0ZXMgdGhlIGlubmVyIGxpc3RcbiAgICBuYW1lcyhpbm5lcl9saXN0KSA8LSBtaW51dGVfbGlzdCAjI0kgd2FudCB0byBrbm93IFdISUNIIE1JTlVURSBpJ20gcmVmZXJlbmNpbmcuIFxuICAgIGxpc3RbW2pdXSA8LSBpbm5lcl9saXN0ICMjQXNzaWduIHRoaXMgaW5uZXIgbGlzdCBhcyB0aGUgai10aCBlbGVtZW50IG9mIG91ciBkYXkgbGlzdCFcbiAgICBmb3IgKG1pbnV0ZSBpbiAxOjM5MCl7ICNOb3cgd2UgbG9vcCBvdmVyIGFsbCBwb3NzaWJsZSBtaW51dGVzXG4gICAgICAgICAgICBpbm5lcl92YXJpYWJsZV9saXN0IDwtIHZlY3Rvcihtb2RlID0gJ2xpc3QnLCBsZW5ndGggPSA5KSAjVGhpcyB3aWxsIGhhdmUgdGhlIGxlbmd0aCBlcXVhbCB0byBudW1iZXIgb2YgdmFyaWFibGVzIG9mIGludGVyZXN0XG4gICAgICAgICAgICBuYW1lcyhpbm5lcl92YXJpYWJsZV9saXN0KSA8LSBjKFwiRGF5XCIsIFwiTW9udGhcIiwgXCJZZWFyXCIsIFwiT3BlblwiLCBcIkNsb3NlXCIsIFwiTG93XCIsIFwiSGlnaFwiLCBcIlZvbHVtZVwiLFwicl9jY1wiKVxuICAgICAgXG4gICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dIDwtIGlubmVyX3ZhcmlhYmxlX2xpc3QgI2VhY2ggbWludXRlIG9mIHRoZSBkYXkgaXMgZWZmZWN0aXZlbHkgcmVjZWl2aW5nIHRoZSB2ZWN0b3Igb2YgdmFyaWFibGVzLCBhbmQgd2VgbGwgZmlsbCB0aGlzIHZlY3RvciBuZXh0LiBIZXJlLCB3ZSBleHBsaWNpdCB0aGF0IGxpc3RbW2pdXVtbbWluXV0gaXMgYSBsaXN0IG9uIGl0cyBvd24sIGJ5IGFzc29jaWF0aW5nIGl0IHdpdGggaW5uZXJfdmFyaWFibGVfbGlzdCwgd2hpY2ggaXMgYSBsaXN0XG4gICAgICBcbiAgICAgICAgICAgIGRmX21pbnV0ZSA8LSBhZGpfZGF5X2RmW2Fkal9kYXlfZGYkVGltZSA9PSBtaW51dGVfbGlzdFttaW51dGVdLF0gIyNXZSBvcGVuIHRoZSBkYXRhZnJhbWUgbWludXRlIGJ5IG1pbnV0ZVxuXG4gICAgICAgIFxuICAgICAgICAgICAgZGZfbWludXRlX21pbnVzIDwtIGFkal9kYXlfZGZbYWRqX2RheV9kZiRUaW1lID09IG1pbnV0ZV9saXN0W21pbnV0ZS0xXSxdXG4gICAgICBcbiAgICAgICNmaW5hbGx5LCBhIG1pbnV0ZSBvZiBkYXkgaiBpcyByZWNlaXZpbmcgcmVsZXZhbnQgZWNvbm9taWMgdmFyaWFibGVzXHQgICAgICBcblxuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbMV1dIDwtIGZvcm1hdChkZl9taW51dGUkRGF0ZSwnJWQnKVxuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbMl1dIDwtIGZvcm1hdChkZl9taW51dGUkRGF0ZSwnJW0nKVxuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbM11dIDwtIGZvcm1hdChkZl9taW51dGUkRGF0ZSwnJVknKVxuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbNF1dIDwtIGRmX21pbnV0ZSRPcGVuXG4gICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s1XV0gPC0gZGZfbWludXRlJENsb3NlXG4gICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s2XV0gPC0gZGZfbWludXRlJExvd1xuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbN11dIDwtIGRmX21pbnV0ZSRIaWdoXG4gICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s4XV0gPC0gZGZfbWludXRlJFZvbHVtZVxuICAgICAgICAgICAgbGlzdFtbal1dW1ttaW51dGVdXVtbOV1dIDwtIGxvZygoZGZfbWludXRlJENsb3NlKS8oZGZfbWludXRlX21pbnVzJENsb3NlKSkgIyNDaGFuZ2VkIHRvIGJlIHRoZSBsb2cgcmV0dXJuLlxuICAgICAgICAgICAgICAgICAgICAgICAgfVxuICAgICAgXG4gICAgICAgICAgICAgICAgfVxuICAgIFxuICBcbiAgcmV0dXJuKGxpc3QpXG59XG5cbmBgYCJ9 -->
-<pre class="r"><code>library(dplyr)
-
-make_data &lt;- function(ticker, flag = 0){
-  ##So here&#39;s the deal: I want a list of dataframes, all with the same length of minutes.
-  ##But i want every element of this list to be a list in itself: the first element is the DATE of the dataframe, the second is the dataframe itself. 
-  clean_ticker &lt;- clean_data(ticker, flag)
-  ##Create a list of ALL existing minutes
-  minute_list &lt;- sort(unique(clean_ticker$Time))
-  minute_df &lt;- data.frame(&#39;Time&#39; = minute_list) ##This df is      used only for the left join 
-  dias &lt;- unique(clean_ticker$Date)
-  n &lt;- length(dias)
- ## arr &lt;- array(NA, dim = c(390, dim(clean_ticker)[2], n)) deprecated
-  list &lt;- vector(mode = &quot;list&quot;, length =  n)
-  names(list) &lt;- dias ##I also want to NAME the elements of the list to know which date it is.
-  for(j in 1:n){
-    day_df &lt;- clean_ticker[clean_ticker$Date == dias[j],]
-    adj_day_df &lt;- left_join(minute_df, day_df, by = &#39;Time&#39;) ##This is the dataframe with all data for all possible minutes, whether they have observations that day or not
-    inner_list &lt;-  vector(mode = &#39;list&#39;, length = 390)  ##Creates the inner list
-    names(inner_list) &lt;- minute_list ##I want to know WHICH MINUTE i&#39;m referencing. 
-    list[[j]] &lt;- inner_list ##Assign this inner list as the j-th element of our day list!
-    for (minute in 1:390){ #Now we loop over all possible minutes
-            inner_variable_list &lt;- vector(mode = &#39;list&#39;, length = 9) #This will have the length equal to number of variables of interest
-            names(inner_variable_list) &lt;- c(&quot;Day&quot;, &quot;Month&quot;, &quot;Year&quot;, &quot;Open&quot;, &quot;Close&quot;, &quot;Low&quot;, &quot;High&quot;, &quot;Volume&quot;,&quot;r_cc&quot;)
-      
-            list[[j]][[minute]] &lt;- inner_variable_list #each minute of the day is effectively receiving the vector of variables, and we`ll fill this vector next. Here, we explicit that list[[j]][[min]] is a list on its own, by associating it with inner_variable_list, which is a list
-      
-            df_minute &lt;- adj_day_df[adj_day_df$Time == minute_list[minute],] ##We open the dataframe minute by minute
-
-        
-            df_minute_minus &lt;- adj_day_df[adj_day_df$Time == minute_list[minute-1],]
-      
-      #finally, a minute of day j is receiving relevant economic variables        
-
-            list[[j]][[minute]][[1]] &lt;- format(df_minute$Date,&#39;%d&#39;)
-            list[[j]][[minute]][[2]] &lt;- format(df_minute$Date,&#39;%m&#39;)
-            list[[j]][[minute]][[3]] &lt;- format(df_minute$Date,&#39;%Y&#39;)
-            list[[j]][[minute]][[4]] &lt;- df_minute$Open
-            list[[j]][[minute]][[5]] &lt;- df_minute$Close
-            list[[j]][[minute]][[6]] &lt;- df_minute$Low
-            list[[j]][[minute]][[7]] &lt;- df_minute$High
-            list[[j]][[minute]][[8]] &lt;- df_minute$Volume
-            list[[j]][[minute]][[9]] &lt;- log((df_minute$Close)/(df_minute_minus$Close)) ##Changed to be the log return.
-                        }
-      
-                }
-    
-  
-  return(list)
-}
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgPC0gIGRvLmNhbGwoXCJyYmluZFwiLCBzdG9ja3NfbGlzdClcblxuYGBgIn0= -->
+<pre class="r"><code>df &lt;-  do.call(&quot;rbind&quot;, stocks_list)
 </code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IGNhbm5vdCBhbGxvY2F0ZSB2ZWN0b3Igb2Ygc2l6ZSAzNzMuMSBNYlxuRXJyb3IgZHVyaW5nIHdyYXB1cDogY2Fubm90IGFsbG9jYXRlIHZlY3RvciBvZiBzaXplIDQ4My4wIE1iXG5FcnJvcjogbm8gbW9yZSBlcnJvciBoYW5kbGVycyBhdmFpbGFibGUgKHJlY3Vyc2l2ZSBlcnJvcnM/KTsgaW52b2tpbmcgJ2Fib3J0JyByZXN0YXJ0XG4ifQ== -->
+<pre><code>Error: cannot allocate vector of size 373.1 Mb
+Error during wrapup: cannot allocate vector of size 483.0 Mb
+Error: no more error handlers available (recursive errors?); invoking &#39;abort&#39; restart</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Now, we want to apply the function to all of our dataframes, finally creating the tensors we needed</p>
+<p>2.3 INSPECTING OBSERVATIONS</p>
+<p>For each stock, the number of observations will be given:</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQVhQX3QgPC0gIG1ha2VfZGF0YShBWFApXG5CQV90IDwtIG1ha2VfZGF0YShBWFApXG5DQVRfdCA8LSAgbWFrZV9kYXRhKEFYUClcbkNTQ09fdCA8LSAgbWFrZV9kYXRhKEFYUClcbkNWWF90IDwtICBtYWtlX2RhdGEoQVhQKVxuRERfdCA8LSBtYWtlX2RhdGEoQVhQKVxuRElTX3QgPC0gIG1ha2VfZGF0YShBWFApXG5HRV90IDwtIG1ha2VfZGF0YShBWFApXG5HU190IDwtIG1ha2VfZGF0YShBWFApXG5IRF90IDwtIG1ha2VfZGF0YShBWFApXG5JQk1fdCA8LSAgbWFrZV9kYXRhKEFYUClcbklOVENfdCA8LSAgbWFrZV9kYXRhKEFYUClcbkpOSl90IDwtICBtYWtlX2RhdGEoQVhQKVxuSlBNX3QgPC0gIG1ha2VfZGF0YShBWFApXG5LT190IDwtIG1ha2VfZGF0YShBWFApXG5cbmBgYCJ9 -->
-<pre class="r"><code>AXP_t &lt;-  make_data(AXP)
-BA_t &lt;- make_data(AXP)
-CAT_t &lt;-  make_data(AXP)
-CSCO_t &lt;-  make_data(AXP)
-CVX_t &lt;-  make_data(AXP)
-DD_t &lt;- make_data(AXP)
-DIS_t &lt;-  make_data(AXP)
-GE_t &lt;- make_data(AXP)
-GS_t &lt;- make_data(AXP)
-HD_t &lt;- make_data(AXP)
-IBM_t &lt;-  make_data(AXP)
-INTC_t &lt;-  make_data(AXP)
-JNJ_t &lt;-  make_data(AXP)
-JPM_t &lt;-  make_data(AXP)
-KO_t &lt;- make_data(AXP)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY291bnQgPC0gY2xlYW5fZGYgJT4lIGdyb3VwX2J5KFN0b2NrKSAlPiUgc3VtbWFyaXNlKG4gPSBuKFN0b2NrKSlcblxuZGF0YXRhYmxlKGNvdW50LCBcbiAgICAgICAgICB3aWR0aCA9IFwiMzAlXCIsIFxuICAgICAgICAgIGNhcHRpb24gPSAnTnVtYmVyIG9mIG9ic2VydmF0aW9ucyBieSBTdG9jaycpXG5gYGAifQ== -->
+<pre class="r"><code>count &lt;- clean_df %&gt;% group_by(Stock) %&gt;% summarise(n = n(Stock))
+
+datatable(count, 
+          width = &quot;30%&quot;, 
+          caption = &#39;Number of observations by Stock&#39;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The level of the last closing price for each day, by asset, will be plotted:</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2xlYW5fZGYgJT4lIGdyb3VwX2J5KFN0b2NrLCBEYXRlKSAlPiUgXG4gIGZpbHRlcihUaW1lID09IG1heChUaW1lKSkgJT4lIFxuICBnZ3Bsb3QoYWVzKHggPSBhcy5EYXRlKERhdGUpLCB5ID0gQ2xvc2UpKSArXG4gIGdlb21fbGluZSgpICtcbiAgZmFjZXRfd3JhcCh+IFN0b2NrLCBuY29sID0gNCwgc2NhbGVzID0gJ2ZyZWUnKSArIFxuICBsYWJzKHggPSBcIlwiLCB5ID0gXCJcIiwgdGl0bGUgPSAnRGFpbHkgY2xvc2UgcHJpY2VzJykgK1xuICB0aGVtZV9idygpXG5cbiNmYWNldF93cmFwIGZyb20gZ2dwbG90IGFsbG93cyBwbG90dGluZyB0aGUgZmlsdGVyZWQgb2JzZXJ2YXRpb25zIChjbG9zaW5nIHByaWNlIGV2b2x2aW5nIHRocm91Z2ggdGhlIGxhc3QgbWludXRlIG9mIGVhY2ggZGF5KSBpbiBkaWZmZXJlbnQgZ3JhcGhzIChvbmUgZm9yIGVhY2ggc3RvY2spLCB3aXRoIGZvdXIgY29sdW1ucyBwZXIgcm93XG5cbmBgYCJ9 -->
+<pre class="r"><code>clean_df %&gt;% group_by(Stock, Date) %&gt;% 
+  filter(Time == max(Time)) %&gt;% 
+  ggplot(aes(x = as.Date(Date), y = Close)) +
+  geom_line() +
+  facet_wrap(~ Stock, ncol = 4, scales = &#39;free&#39;) + 
+  labs(x = &quot;&quot;, y = &quot;&quot;, title = &#39;Daily close prices&#39;) +
+  theme_bw()
+
+#facet_wrap from ggplot allows plotting the filtered observations (closing price evolving through the last minute of each day) in different graphs (one for each stock), with four columns per row
 </code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-output-begin eyJkYXRhIjoiRXJybzogbsOjbyDDqSBwb3Nzw612ZWwgYWxvY2FyIHZldG9yIGRlIHRhbWFuaG8gOC4yIE1iXG4ifQ== -->
 <pre><code>Erro: não é possível alocar vetor de tamanho 8.2 Mb</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="3" style="list-style-type: decimal">
+<li>DESCRIPTIVE ANALYSIS</li>
+</ol>
+<p>3.1 ASSESSING VOLATILITY</p>
+<!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuQVhQX3QgPC0gIG1ha2VfZGF0YShBWFApXG5gYGAifQ== -->
-<pre class="r"><code>AXP_t &lt;-  make_data(AXP)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0FuIG9iamVjdCBydiB3aWxsIGJlIGNyZWF0ZWQsIGNvbnRhaW5pbmcgdm9sdW1lcyBhbmQgY2xvc2VfdG9fY2xvc2UgcmV0dXJuc1xuXG5tZWFzdXJlcyA8LSBjbGVhbl9kYXRhICU+JSBcbiAgXG4gIGdyb3VwX2J5KFN0b2NrLCBEYXRlKSAlPiUgI2Zvcm11bGFzIGJlbG93IHdpbGwgYmUgYXBwbGllZCBmb3IgdGhlIHNhbWUgc3RvY2sgYmV0d2VlbiBkYXRlcyBcbiAgXG4gIG11dGF0ZShyX2NjID0gbG9nKENsb3NlKSAtIGxhZyhsb2coQ2xvc2UpKSkgJT4lICN0aGlzIGNyZWF0ZXMgYSBjb2x1bW4gd2hlcmUsIGZvciBhIHN0b2NrIGF0IGEgY2VydGFpbiBtaW51dGUgb2YgYSBkYXksIHRoZSByYXRlIG9mIGNoYW5nZSBvZiB0aGUgY2xvc2luZyBwcmljZSB3aXRoIHJlc3BlY3QgdG8gdGhhdCBwcmljZSBpbiB0aGUgcHJldmlvdXMgbWludXRlIGlzIHJldHVybmVkP1xuICBcbiAgc3VtbWFyaXNlKGRhaWx5PXN1bShyX2NjLG5hLnJtPVQpLCBSViA9IHN1bShyX2NjXjIsIG5hLnJtID0gVCksIFZPTCA9IHN1bShWb2x1bWUpKSAlPiUgI2ZvciBlYWNoIHN0b2NrIGFuZCBkYXkgd2Ugb2J0YWluIHRocmVlIHZhcmlhYmxlczogZGFpbHksIHdoaWNoIGlzIHRoZSBhY2N1bXVsYXRlZCBjbG9zZWQtdG8tY2xvc2VkIHJldHVybnMsIFJWLCB3aGljaCBpcyB0aGUgYWNjdW11bGF0ZWQgU1FVQVJFRCBjbG9zZWQtdG8tY2xvc2VkIHJldHVybnMsIGFuZCBWT0wsIHdoaWNoIHN1bXMgdGhlIHZvbHVtZXMgb2YgdGhlIG1pbnV0ZXMgb2YgdGhhdCBkYXkuIFxuICBcbiAgdW5ncm91cCgpICNBdm9pZHMgcG90ZW50aWFsIHVuaW50ZW5kZWQgZXJyb3JzIGR1ZSB0byB0aGUgZ3JvdXBpbmdcblxuI3dlIHVzZSBkY2FzdCgpIHRvIHRha2UgYSBsb29rIGluIHRoZSBSVi4gTEhTIHZhcmlhYmxlIHZhbHVlcyB3aWxsIGJlIGluIHJvd3MuIFJIUyB2YXJpYWJsZXMgdmFsdWVzIHdpbGwgYmVjb21lIGNvbHVtbiBuYW1lcy4gZnVuLmFnZ3JlZ2F0ZSh2YWx1ZS52YXIpIHdpbGwgYmUgY2VsbCB2YWx1ZXMuIGRhdGF0YWJsZSgpIGlzIHRoZW4gYSB0YWJsZSBtYWRlIHRvIGNvbnRhaW4gdmFsdWVzIGZyb20gZGNhc3QoKVxuI2RjYXN0KCkgaXMgYSBsb25nLXRvLXdpZGUgcmVzaGFwcGluZyB0b29sLCB3aGlsZSBtZWx0KCkgaXMgd2lkZS10by1sb25nXG5cbm1lYXN1cmVzX3dpZGUgPC0gbWVhc3VyZXMgJT4lIHNlbGVjdChTdG9jaywgRGF0ZSwgUlYpICU+JSBkY2FzdChEYXRlIH4gU3RvY2ssIHZhbHVlLnZhciA9ICdSVicpXG5cbmRhdGF0YWJsZShjYmluZChEYXRlID0gcnZfd2lkZVssMV0sIHJvdW5kKFJWX3dpZGVbLDE6MzBdLDUpKSwgI3dlIHJvdW5kIHRoZSBudW1iZXJzIHRvIGNvbnRhaW4gNSBkaWdpdHNcbiAgICAgICAgICBcbiAgICAgICAgICB3aWR0aCA9IFwiMTAwJVwiLCBcbiAgICAgICAgICBjYXB0aW9uID0gJ0RhaWx5IFJlYWxpemVkIFZvbGF0aWxpdHknLFxuICAgICAgICAgIG9wdGlvbnMgPSBsaXN0KHNjcm9sbFggPSBUKSlcblxuI3dlIHdhbnQgaXQgdG8gYmUgMzAgKGFzc2V0cykgYW5kIDQzMTAgZGF5c1xuZGltKG1lYXN1cmVzX3dpZGUpIFxuXG4jd2Ugd2FudCB0byBjaGVjayBtaXNzaW5nIHZhbHVlcyBwZXIgc3RvY2sgXG5tZWFzdXJlc19uYSA8LSBtZWFzdXJlcyAlPiVcbiAgZ3JvdXBfYnkoU3RvY2spICU+JVxuICBzdW1tYXJpc2UgKG5hX3N0b2NrPXN1bShpcy5uYSkpICU+JVxuICB1bmdyb3VwKClcbmBgYCJ9 -->
+<pre class="r"><code>#An object rv will be created, containing volumes and close_to_close returns
+
+measures &lt;- clean_data %&gt;% 
+  
+  group_by(Stock, Date) %&gt;% #formulas below will be applied for the same stock between dates 
+  
+  mutate(r_cc = log(Close) - lag(log(Close))) %&gt;% #this creates a column where, for a stock at a certain minute of a day, the rate of change of the closing price with respect to that price in the previous minute is returned?
+  
+  summarise(daily=sum(r_cc,na.rm=T), RV = sum(r_cc^2, na.rm = T), VOL = sum(Volume)) %&gt;% #for each stock and day we obtain three variables: daily, which is the accumulated closed-to-closed returns, RV, which is the accumulated SQUARED closed-to-closed returns, and VOL, which sums the volumes of the minutes of that day. 
+  
+  ungroup() #Avoids potential unintended errors due to the grouping
+
+#we use dcast() to take a look in the RV. LHS variable values will be in rows. RHS variables values will become column names. fun.aggregate(value.var) will be cell values. datatable() is then a table made to contain values from dcast()
+#dcast() is a long-to-wide reshapping tool, while melt() is wide-to-long
+
+measures_wide &lt;- measures %&gt;% select(Stock, Date, RV) %&gt;% dcast(Date ~ Stock, value.var = &#39;RV&#39;)
+
+datatable(cbind(Date = rv_wide[,1], round(RV_wide[,1:30],5)), #we round the numbers to contain 5 digits
+          
+          width = &quot;100%&quot;, 
+          caption = &#39;Daily Realized Volatility&#39;,
+          options = list(scrollX = T))
+
+#we want it to be 30 (assets) and 4310 days
+dim(measures_wide) 
+
+#we want to check missing values per stock 
+measures_na &lt;- measures %&gt;%
+  group_by(Stock) %&gt;%
+  summarise (na_stock=sum(is.na)) %&gt;%
+  ungroup()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>3.3 HISTOGRAMS checar</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWVhc3VyZXMgJT4lIFxuICBncm91cF9ieShBc3NldCwgRGF0ZSkgJT4lIFxuICBtdXRhdGUoUlYgPSAxMDAqbWluKFJWLCAwLjAwMSkpICU+JVxuICBuZXN0KGRhdGEgPSBjKFJWLCBWb2x1bWUsIERhdGUpKSAlPiUgXG4gIG11dGF0ZSh5ID0gbWFwKGRhdGEsIH4gZG5vcm0oLiRSViwgbWVhbiA9IG1lYW4oLiRSViksIHNkID0gc2QoLiRSVikpICogMC4wMDEgKiBzdW0oIWlzLm5hKC4kUlYpKSkpICU+JSBcblxuYGBgIn0= -->
+<pre class="r"><code>measures %&gt;% 
+  group_by(Asset, Date) %&gt;% 
+  mutate(RV = 100*min(RV, 0.001)) %&gt;%
+  nest(data = c(RV, Volume, Date)) %&gt;% 
+  mutate(y = map(data, ~ dnorm(.$RV, mean = mean(.$RV), sd = sd(.$RV)) * 0.001 * sum(!is.na(.$RV)))) %&gt;% 
+</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkV4ZXJjaXNlIDEiDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQoNCkZpcnN0IG9mIGFsbCwgd2UgbmVlZCB0byByZWFkIGFsbCB0aGUgZmlsZXMuDQoNCmBgYHtyfQ0KbGlicmFyeShyZWFkcikNCmxpYnJhcnkoZHBseXIpDQpBWFAgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9BWFAudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCkJBIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvQkEudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCkNBVCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NBVC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KQ1NDTyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NTQ08udHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCkNWWCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0NWWC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KREQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9ERC50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KRElTIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvRElTLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpHRSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0dFLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpHUyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0dTLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpIRCA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0hELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpJQk0gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9JQk0udHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCklOVEMgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9JTlRDLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpKTkogPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9KTkoudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCkpQTSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL0pQTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KS08gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9LTy50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KTUNEIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvTUNELnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpNTU0gPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9NTU0udHh0JywgY29sX3R5cGVzID0gY29scygpKSkNCk1SSyA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL01SSy50eHQnLCBjb2xfdHlwZXMgPSAgY29scygpKSkNCk1TRlQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9NU0ZULnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpOS0UgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9OS0UudHh0JywgY29sX3R5cGVzID0gIGNvbHMoKSkpDQpQRkUgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9QRkUudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNClBHIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvUEcudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNClNQWSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1NQWS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KVFJWIDwtIGRhdGEuZnJhbWUocmVhZF9jc3YoJ0RhdGEvVFJWLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpVTkggPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9VTkgudHh0JywgY29sX3R5cGVzID0gIGNvbHMoKSkpDQpVVFggPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9VVFgudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNClYgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9WLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpWWiA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1ZaLnR4dCcsIGNvbF90eXBlcyA9IGNvbHMoKSkpDQpXTVQgPC0gZGF0YS5mcmFtZShyZWFkX2NzdignRGF0YS9XTVQudHh0JywgY29sX3R5cGVzID0gY29scygpKSkNClhPTSA8LSBkYXRhLmZyYW1lKHJlYWRfY3N2KCdEYXRhL1hPTS50eHQnLCBjb2xfdHlwZXMgPSBjb2xzKCkpKQ0KYGBgDQoNCk9LLCBzbyBub3cgd2UgaGF2ZSB0aGVzZSBmaWxlcywgd2hpY2ggYXJlIFRPTyBCSUcuIExldCdzIGZpcnN0IGNsZWFuIHRoZSBkYXRhIHRvIGdldCBpdCBmcm9tIDIwMDAgb253YXJkcy4NCmBgYHtyfQ0KY2xlYW5fZGF0YSA8LSBmdW5jdGlvbih0aWNrZXIsZmxhZyA9IDApIHsNCiAgIyNJbiB0aGlzIGZ1bmN0aW9uLCB3ZSdyZSBnb2luZyB0byBmaXJzdCBjb252ZXJ0IHRoZSBEYXRlIGNvbHVtbiB0byBkYXRlOg0KICBpZihmbGFnID09IDApew0KICAgICB0aWNrZXIkRGF0ZSA8LSBhcy5EYXRlKHRpY2tlciREYXRlLCAnJWQvJW0vJVknKQ0KICB9IGVsc2V7ICMjVGhpcyBpcyBiZWNhdXNlIFYudHh0IGhhcyBtb250aCBhbmQgZGF5IHN3YXBwZWQsIGkga25vdyB3aG8gaXQgaXMgDQogICAgIHRpY2tlciREYXRlIDwtIGFzLkRhdGUodGlja2VyJERhdGUsICclbS8lZC8lWScpDQogIH0NCiAgDQogICMjIFRoZW4sIHdlIHdhbnQgdG8gcmVzdHJpY3QgaXQgZnJvbSAyMDAwIG9ud2FyZHMNCiAgICAgbmV3X3RpY2tlciA8LSBmaWx0ZXIodGlja2VyLCBmb3JtYXQodGlja2VyJERhdGUsICclWScpID49IDIwMDApDQogIHJldHVybihuZXdfdGlja2VyKQ0KfQ0KYGBgDQoNCg0KYGBge3J9DQpsaWJyYXJ5KGRwbHlyKQ0KDQptYWtlX2RhdGEgPC0gZnVuY3Rpb24odGlja2VyLCBmbGFnID0gMCl7DQogICMjU28gaGVyZSdzIHRoZSBkZWFsOiBJIHdhbnQgYSBsaXN0IG9mIGRhdGFmcmFtZXMsIGFsbCB3aXRoIHRoZSBzYW1lIGxlbmd0aCBvZiBtaW51dGVzLg0KICAjI0J1dCBpIHdhbnQgZXZlcnkgZWxlbWVudCBvZiB0aGlzIGxpc3QgdG8gYmUgYSBsaXN0IGluIGl0c2VsZjogdGhlIGZpcnN0IGVsZW1lbnQgaXMgdGhlIERBVEUgb2YgdGhlIGRhdGFmcmFtZSwgdGhlIHNlY29uZCBpcyB0aGUgZGF0YWZyYW1lIGl0c2VsZi4gDQogIGNsZWFuX3RpY2tlciA8LSBjbGVhbl9kYXRhKHRpY2tlciwgZmxhZykNCiAgIyNDcmVhdGUgYSBsaXN0IG9mIEFMTCBleGlzdGluZyBtaW51dGVzDQogIG1pbnV0ZV9saXN0IDwtIHNvcnQodW5pcXVlKGNsZWFuX3RpY2tlciRUaW1lKSkNCiAgbWludXRlX2RmIDwtIGRhdGEuZnJhbWUoJ1RpbWUnID0gbWludXRlX2xpc3QpICMjVGhpcyBkZiBpcyAgICAgIHVzZWQgb25seSBmb3IgdGhlIGxlZnQgam9pbiANCiAgZGlhcyA8LSB1bmlxdWUoY2xlYW5fdGlja2VyJERhdGUpDQogIG4gPC0gbGVuZ3RoKGRpYXMpDQogIyMgYXJyIDwtIGFycmF5KE5BLCBkaW0gPSBjKDM5MCwgZGltKGNsZWFuX3RpY2tlcilbMl0sIG4pKSBkZXByZWNhdGVkDQogIGxpc3QgPC0gdmVjdG9yKG1vZGUgPSAibGlzdCIsIGxlbmd0aCA9ICBuKQ0KICBuYW1lcyhsaXN0KSA8LSBkaWFzICMjSSBhbHNvIHdhbnQgdG8gTkFNRSB0aGUgZWxlbWVudHMgb2YgdGhlIGxpc3QgdG8ga25vdyB3aGljaCBkYXRlIGl0IGlzLg0KICBmb3IoaiBpbiAxOm4pew0KICAgIGRheV9kZiA8LSBjbGVhbl90aWNrZXJbY2xlYW5fdGlja2VyJERhdGUgPT0gZGlhc1tqXSxdDQogICAgYWRqX2RheV9kZiA8LSBsZWZ0X2pvaW4obWludXRlX2RmLCBkYXlfZGYsIGJ5ID0gJ1RpbWUnKSAjI1RoaXMgaXMgdGhlIGRhdGFmcmFtZSB3aXRoIGFsbCBkYXRhIGZvciBhbGwgcG9zc2libGUgbWludXRlcywgd2hldGhlciB0aGV5IGhhdmUgb2JzZXJ2YXRpb25zIHRoYXQgZGF5IG9yIG5vdA0KICAgIGlubmVyX2xpc3QgPC0gIHZlY3Rvcihtb2RlID0gJ2xpc3QnLCBsZW5ndGggPSAzOTApICAjI0NyZWF0ZXMgdGhlIGlubmVyIGxpc3QNCiAgICBuYW1lcyhpbm5lcl9saXN0KSA8LSBtaW51dGVfbGlzdCAjI0kgd2FudCB0byBrbm93IFdISUNIIE1JTlVURSBpJ20gcmVmZXJlbmNpbmcuIA0KICAgIGxpc3RbW2pdXSA8LSBpbm5lcl9saXN0ICMjQXNzaWduIHRoaXMgaW5uZXIgbGlzdCBhcyB0aGUgai10aCBlbGVtZW50IG9mIG91ciBkYXkgbGlzdCENCiAgICBmb3IgKG1pbnV0ZSBpbiAxOjM5MCl7ICNOb3cgd2UgbG9vcCBvdmVyIGFsbCBwb3NzaWJsZSBtaW51dGVzDQogICAgICAgICAgICBpbm5lcl92YXJpYWJsZV9saXN0IDwtIHZlY3Rvcihtb2RlID0gJ2xpc3QnLCBsZW5ndGggPSA5KSAjVGhpcyB3aWxsIGhhdmUgdGhlIGxlbmd0aCBlcXVhbCB0byBudW1iZXIgb2YgdmFyaWFibGVzIG9mIGludGVyZXN0DQogICAgICAgICAgICBuYW1lcyhpbm5lcl92YXJpYWJsZV9saXN0KSA8LSBjKCJEYXkiLCAiTW9udGgiLCAiWWVhciIsICJPcGVuIiwgIkNsb3NlIiwgIkxvdyIsICJIaWdoIiwgIlZvbHVtZSIsInJfY2MiKQ0KICAgICAgDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dIDwtIGlubmVyX3ZhcmlhYmxlX2xpc3QgI2VhY2ggbWludXRlIG9mIHRoZSBkYXkgaXMgZWZmZWN0aXZlbHkgcmVjZWl2aW5nIHRoZSB2ZWN0b3Igb2YgdmFyaWFibGVzLCBhbmQgd2VgbGwgZmlsbCB0aGlzIHZlY3RvciBuZXh0LiBIZXJlLCB3ZSBleHBsaWNpdCB0aGF0IGxpc3RbW2pdXVtbbWluXV0gaXMgYSBsaXN0IG9uIGl0cyBvd24sIGJ5IGFzc29jaWF0aW5nIGl0IHdpdGggaW5uZXJfdmFyaWFibGVfbGlzdCwgd2hpY2ggaXMgYSBsaXN0DQogICAgICANCiAgICAgICAgICAgIGRmX21pbnV0ZSA8LSBhZGpfZGF5X2RmW2Fkal9kYXlfZGYkVGltZSA9PSBtaW51dGVfbGlzdFttaW51dGVdLF0gIyNXZSBvcGVuIHRoZSBkYXRhZnJhbWUgbWludXRlIGJ5IG1pbnV0ZQ0KDQogICAgICAgIA0KICAgICAgICAgICAgZGZfbWludXRlX21pbnVzIDwtIGFkal9kYXlfZGZbYWRqX2RheV9kZiRUaW1lID09IG1pbnV0ZV9saXN0W21pbnV0ZS0xXSxdDQogICAgICANCiAgICAgICNmaW5hbGx5LCBhIG1pbnV0ZSBvZiBkYXkgaiBpcyByZWNlaXZpbmcgcmVsZXZhbnQgZWNvbm9taWMgdmFyaWFibGVzCSAgICAgIA0KDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1sxXV0gPC0gZm9ybWF0KGRmX21pbnV0ZSREYXRlLCclZCcpDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1syXV0gPC0gZm9ybWF0KGRmX21pbnV0ZSREYXRlLCclbScpDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1szXV0gPC0gZm9ybWF0KGRmX21pbnV0ZSREYXRlLCclWScpDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s0XV0gPC0gZGZfbWludXRlJE9wZW4NCiAgICAgICAgICAgIGxpc3RbW2pdXVtbbWludXRlXV1bWzVdXSA8LSBkZl9taW51dGUkQ2xvc2UNCiAgICAgICAgICAgIGxpc3RbW2pdXVtbbWludXRlXV1bWzZdXSA8LSBkZl9taW51dGUkTG93DQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s3XV0gPC0gZGZfbWludXRlJEhpZ2gNCiAgICAgICAgICAgIGxpc3RbW2pdXVtbbWludXRlXV1bWzhdXSA8LSBkZl9taW51dGUkVm9sdW1lDQogICAgICAgICAgICBsaXN0W1tqXV1bW21pbnV0ZV1dW1s5XV0gPC0gbG9nKChkZl9taW51dGUkQ2xvc2UpLyhkZl9taW51dGVfbWludXMkQ2xvc2UpKSAjI0NoYW5nZWQgdG8gYmUgdGhlIGxvZyByZXR1cm4uDQogICAgICAgICAgICAgICAgICAgICAgICB9DQogICAgICANCiAgICAgICAgICAgICAgICB9DQogICAgDQogIA0KICByZXR1cm4obGlzdCkNCn0NCg0KYGBgDQpOb3csIHdlIHdhbnQgdG8gYXBwbHkgdGhlIGZ1bmN0aW9uIHRvIGFsbCBvZiBvdXIgZGF0YWZyYW1lcywgZmluYWxseSBjcmVhdGluZyB0aGUgdGVuc29ycyB3ZSBuZWVkZWQNCmBgYHtyfQ0KQVhQX3QgPC0gIG1ha2VfZGF0YShBWFApDQpCQV90IDwtIG1ha2VfZGF0YShBWFApDQpDQVRfdCA8LSAgbWFrZV9kYXRhKEFYUCkNCkNTQ09fdCA8LSAgbWFrZV9kYXRhKEFYUCkNCkNWWF90IDwtICBtYWtlX2RhdGEoQVhQKQ0KRERfdCA8LSBtYWtlX2RhdGEoQVhQKQ0KRElTX3QgPC0gIG1ha2VfZGF0YShBWFApDQpHRV90IDwtIG1ha2VfZGF0YShBWFApDQpHU190IDwtIG1ha2VfZGF0YShBWFApDQpIRF90IDwtIG1ha2VfZGF0YShBWFApDQpJQk1fdCA8LSAgbWFrZV9kYXRhKEFYUCkNCklOVENfdCA8LSAgbWFrZV9kYXRhKEFYUCkNCkpOSl90IDwtICBtYWtlX2RhdGEoQVhQKQ0KSlBNX3QgPC0gIG1ha2VfZGF0YShBWFApDQpLT190IDwtIG1ha2VfZGF0YShBWFApDQpNQ0RfdCA8LSAgbWFrZV9kYXRhKEFYUCkNCk1NTV90IDwtICBtYWtlX2RhdGEoQVhQKQ0KTVJLX3QgPC0gIG1ha2VfZGF0YShBWFApDQpNU0ZUX3QgPC0gIG1ha2VfZGF0YShBWFApDQpOS0VfdCA8LSAgbWFrZV9kYXRhKEFYUCkNClBGRV90IDwtICBtYWtlX2RhdGEoQVhQKQ0KUEdfdCA8LSBtYWtlX2RhdGEoQVhQKQ0KU1BZX3QgPC0gIG1ha2VfZGF0YShBWFApDQpUUlZfdCA8LSAgbWFrZV9kYXRhKEFYUCkNClVOSF90IDwtICBtYWtlX2RhdGEoQVhQKQ0KVVRYX3QgPC0gIG1ha2VfZGF0YShBWFApDQpWX3QgPCBtYWtlX2RhdGEoQVhQLCBmbGFnID0gMSkNClZaX3QgPC0gbWFrZV9kYXRhKEFYUCkNCldNVF90IDwtICBtYWtlX2RhdGEoQVhQKQ0KWE9NX3QgPC0gIG1ha2VfZGF0YShBWFApDQpgYGANCmBgYHtyfQ0KY2xlYW5fdGlja2VyIDwtIGNsZWFuX2RhdGEoQVhQKQ0KbWludXRlX2xpc3QgPC0gc29ydCh1bmlxdWUoY2xlYW5fdGlja2VyJFRpbWUpKQ0KbWludXRlX2RmIDwtIGRhdGEuZnJhbWUoJ1RpbWUnID0gbWludXRlX2xpc3QpICMjVA0KZGlhcyA8LSB1bmlxdWUoY2xlYW5fdGlja2VyJERhdGUpDQoNCm4gPC0gbGVuZ3RoKGRpYXMpDQpqID0gMSANCg0KbGlzdCA8LSB2ZWN0b3IobW9kZSA9ICJsaXN0IiwgbGVuZ3RoID0gIG4pDQoNCmRmMSA8LSBjbGVhbl90aWNrZXJbY2xlYW5fdGlja2VyJERhdGUgPT0gZGlhc1tqXSxdDQoNCmRmMiA8LSBsZWZ0X2pvaW4obWludXRlX2RmLCBkZjEsIGJ5ID0gJ1RpbWUnKSAjI1RoaXMgaXMgdGhlIGRhdGFmcmFtZSB3aXRoIGFsbCBkYXRhIGZvciBhbGwgcG9zc2libGUgbWludXRlcywgd2hldGhlciB0aGV5IGhhdmUgb2JzZXJ2YXRpb25zIHRoYXQgZGF5IG9yIG5vdA0KbGlzdFtbal1dIDwtIHZlY3Rvcihtb2RlID0gJ2xpc3QnLCBsZW5ndGggPSAzOTApICMjQ3JlYXRlcyB0aGUgaW5uZXIgbGlzdA0KbWludXRlID0gMQ0KbGlzdFtbal1dW1ttaW51dGVdXSA8LSB2ZWN0b3IobW9kZSA9ICdsaXN0JywgbGVuZ3RoID0gMikNCmRmX21pbnV0ZSA8LSBkZjJbZGYyJFRpbWUgPT0gbWludXRlX2xpc3RbbWludXRlXSxdDQpkZl9taW51dGVfbWludXMgPC0gZGYyW2RmMiRUaW1lID09IG1pbnV0ZV9saXN0W21pbnV0ZS0xXSxdIyNXZSBvcGVuIHRoZSBkYXRhZnJhbWUgbWludXRlIGJ5IG1pbnV0ZQ0KbGlzdFtbal1dW1ttaW51dGVdXVtbMV1dIDwtIGRmX21pbnV0ZSRPcGVuDQpsaXN0W1tqXV1bW21pbnV0ZV1dW1syXV0gPC0gKGRmX21pbnV0ZSRDbG9zZSAtIGRmX21pbnV0ZV9taW51cyRDbG9zZSkvKGRmX21pbnV0ZV9taW51cyRDbG9zZSkNCiAgICAgIA0KbWludXRlX2RmWzE6MSxdDQp4IDwtIHNvcnQodW5pcXVlKGNsZWFuX3RpY2tlciRUaW1lKSkNCnhfZGYgPC0gZGF0YS5mcmFtZSgiVGltZSIgPSB4KQ0KYGBgDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIFtSIE1hcmtkb3duXShodHRwOi8vcm1hcmtkb3duLnJzdHVkaW8uY29tKSBOb3RlYm9vay4gV2hlbiB5b3UgZXhlY3V0ZSBjb2RlIHdpdGhpbiB0aGUgbm90ZWJvb2ssIHRoZSByZXN1bHRzIGFwcGVhciBiZW5lYXRoIHRoZSBjb2RlLiANCg0KVHJ5IGV4ZWN1dGluZyB0aGlzIGNodW5rIGJ5IGNsaWNraW5nIHRoZSAqUnVuKiBidXR0b24gd2l0aGluIHRoZSBjaHVuayBvciBieSBwbGFjaW5nIHlvdXIgY3Vyc29yIGluc2lkZSBpdCBhbmQgcHJlc3NpbmcgKkN0cmwrU2hpZnQrRW50ZXIqLiANCg0KDQpBZGQgYSBuZXcgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpJbnNlcnQgQ2h1bmsqIGJ1dHRvbiBvbiB0aGUgdG9vbGJhciBvciBieSBwcmVzc2luZyAqQ3RybCtBbHQrSSouDQoNCldoZW4geW91IHNhdmUgdGhlIG5vdGVib29rLCBhbiBIVE1MIGZpbGUgY29udGFpbmluZyB0aGUgY29kZSBhbmQgb3V0cHV0IHdpbGwgYmUgc2F2ZWQgYWxvbmdzaWRlIGl0IChjbGljayB0aGUgKlByZXZpZXcqIGJ1dHRvbiBvciBwcmVzcyAqQ3RybCtTaGlmdCtLKiB0byBwcmV2aWV3IHRoZSBIVE1MIGZpbGUpLg0KDQpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuDQoNCklOVFJPRFVDVElPTg0KDQoyLiBEQVRBIFBSRVBBUkFUSU9ODQoNCjIuMSBMT0FESU5HIFBSRVZJT1VTTFkgSU5TVEFMTEVEIFBBQ0tBR0VTDQoNCmBgYHtyfQ0KbGlicmFyeSh0aWR5dmVyc2UpDQpsaWJyYXJ5KGRwbHlyKQ0KbGlicmFyeSh0c2liYmxlKQ0KbGlicmFyeShmZWFzdHMpDQpsaWJyYXJ5KHN0cmluZ3IpDQpsaWJyYXJ5KGx1YnJpZGF0ZSkNCmxpYnJhcnkoYW55dGltZSkNCmxpYnJhcnkoZ2dwbG90MikNCmxpYnJhcnkoZ2d0aGVtZXMpDQpsaWJyYXJ5KGtuaXRyKQ0KbGlicmFyeShrYWJsZUV4dHJhKQ0KbGlicmFyeShEVCkNCmxpYnJhcnkoaHRtbHRvb2xzKQ0KbGlicmFyeShyZXNoYXBlMikgI3RvIGJlIHVzZWQgd2l0aCB0aWR5dmVyc2UgYW5kIGdnbG9wdDINCmBgYA0KDQoyLjIgSU1QT1JUSU5HIEFORCBDTEVBTklORyBUSEUgREFUQQ0KDQpgYGB7cn0NCg0KI2NyZWF0aW5nIGEgbGlzdCB3aXRoIG5hbWVzIG9mIGFsbCBmaWxlcyANCmZpbGVzX2xpc3QgPC0gbGlzdC5maWxlcygnRGF0YScpDQpzdG9ja19uYW1lIDwtIHN0cl9yZW1vdmUoZmlsZXNfbGlzdCwgIi50eHQiKQ0KDQojQSBsaXN0IHdpbGwgYmUgY3JlYXRlZCB0byBzdG9yZSBlYWNoIGNvbXBhbnlgcyBvYnNlcnZhdGlvbnMgYXMgZGF0YWZyYW1lcyANCg0Kc3RvY2tzX2xpc3QgPC0gbGFwcGx5KGZpbGVzX2xpc3QsIGZ1bmN0aW9uKHgpIHJlYWQudGFibGUocGFzdGUoIkRhdGEvIix4LHNlcCA9ICIiKSwgaGVhZGVyPVQsIHNlcCA9ICIsIikpIA0Kc3RvY2tzX2xpc3QgPC0gbWFwcGx5KGNiaW5kLCBzdG9ja3NfbGlzdCwgIlN0b2NrIiA9IHN0b2NrX25hbWUsIFNJTVBMSUZZPUYpDQoNCiMgQSBkYXRhZnJhbWUgd2lsbCBiaW5kICJyb3d3aXNlIiB0aGUgZGF0YWZyYW1lcyBzdG9yZWQgaW4gc3RvY2tzX2xpc3QgDQpkZiA8LSAgZG8uY2FsbCgicmJpbmQiLCBzdG9ja3NfbGlzdCkNCg0KIyBGcm9tIHRoZSBhYm92ZSBkYXRhZnJhbWUgd2Ugd2lsbCBjb252ZXJ0IHRoZSBkYXRlIGNvbHVtbiBhbmQgb25seSBrZWVwIG9ic2VydmF0aW9ucyBzdGFydGluZyBpbiAyMDAwDQpjbGVhbl9kZiA8LSBkZiAlPiUgDQogICAgc2VsZWN0KEFzc2V0LCBEYXRlLCBUaW1lLCBDbG9zZSwgVm9sdW1lKSAlPiUNCiAgICBtdXRhdGUoVGltZSA9IHNwcmludGYoICIlMDRkIiwgYXMubnVtZXJpYyhUaW1lKSkpICU+JSAjPw0KICAgIG11dGF0ZShUaW1lID0gc3RyX3JlcGxhY2UoVGltZSwgIig/PVxcZHsyfSQpIiwgIjoiKSkgJT4lICM/DQogICAgbXV0YXRlKERhdGUgPSBhcy5EYXRlKGRmJERhdGUsIGZvcm1hdCA9ICIlbSAvICVkIC8gJVkiKSkgJT4lIA0KICAgIGZpbHRlcihEYXRlID49IGFzLkRhdGUoIjIwMDAtMDEtMDEiKSkgDQoNCmBgYA0KDQoyLjMgSU5TUEVDVElORyBPQlNFUlZBVElPTlMNCg0KRm9yIGVhY2ggc3RvY2ssIHRoZSBudW1iZXIgb2Ygb2JzZXJ2YXRpb25zIHdpbGwgYmUgZ2l2ZW46DQoNCmBgYHtSfQ0KY291bnQgPC0gY2xlYW5fZGYgJT4lIGdyb3VwX2J5KFN0b2NrKSAlPiUgc3VtbWFyaXNlKG4gPSBuKFN0b2NrKSkNCg0KZGF0YXRhYmxlKGNvdW50LCANCiAgICAgICAgICB3aWR0aCA9ICIzMCUiLCANCiAgICAgICAgICBjYXB0aW9uID0gJ051bWJlciBvZiBvYnNlcnZhdGlvbnMgYnkgU3RvY2snKQ0KYGBgDQoNClRoZSBsZXZlbCBvZiB0aGUgbGFzdCBjbG9zaW5nIHByaWNlIGZvciBlYWNoIGRheSwgYnkgYXNzZXQsIHdpbGwgYmUgcGxvdHRlZDoNCg0KYGBge1J9DQpjbGVhbl9kZiAlPiUgZ3JvdXBfYnkoU3RvY2ssIERhdGUpICU+JSANCiAgZmlsdGVyKFRpbWUgPT0gbWF4KFRpbWUpKSAlPiUgDQogIGdncGxvdChhZXMoeCA9IGFzLkRhdGUoRGF0ZSksIHkgPSBDbG9zZSkpICsNCiAgZ2VvbV9saW5lKCkgKw0KICBmYWNldF93cmFwKH4gU3RvY2ssIG5jb2wgPSA0LCBzY2FsZXMgPSAnZnJlZScpICsgDQogIGxhYnMoeCA9ICIiLCB5ID0gIiIsIHRpdGxlID0gJ0RhaWx5IGNsb3NlIHByaWNlcycpICsNCiAgdGhlbWVfYncoKQ0KDQojZmFjZXRfd3JhcCBmcm9tIGdncGxvdCBhbGxvd3MgcGxvdHRpbmcgdGhlIGZpbHRlcmVkIG9ic2VydmF0aW9ucyAoY2xvc2luZyBwcmljZSBldm9sdmluZyB0aHJvdWdoIHRoZSBsYXN0IG1pbnV0ZSBvZiBlYWNoIGRheSkgaW4gZGlmZmVyZW50IGdyYXBocyAob25lIGZvciBlYWNoIHN0b2NrKSwgd2l0aCBmb3VyIGNvbHVtbnMgcGVyIHJvdw0KDQpgYGANCjMuIERFU0NSSVBUSVZFIEFOQUxZU0lTDQoNCjMuMSBBU1NFU1NJTkcgVk9MQVRJTElUWQ0KYGBge3J9DQojQW4gb2JqZWN0IHJ2IHdpbGwgYmUgY3JlYXRlZCwgY29udGFpbmluZyB2b2x1bWVzIGFuZCBjbG9zZV90b19jbG9zZSByZXR1cm5zDQoNCm1lYXN1cmVzIDwtIGNsZWFuX2RhdGEgJT4lIA0KICANCiAgZ3JvdXBfYnkoU3RvY2ssIERhdGUpICU+JSAjZm9ybXVsYXMgYmVsb3cgd2lsbCBiZSBhcHBsaWVkIGZvciB0aGUgc2FtZSBzdG9jayBiZXR3ZWVuIGRhdGVzIA0KICANCiAgbXV0YXRlKHJfY2MgPSBsb2coQ2xvc2UpIC0gbGFnKGxvZyhDbG9zZSkpKSAlPiUgI3RoaXMgY3JlYXRlcyBhIGNvbHVtbiB3aGVyZSwgZm9yIGEgc3RvY2sgYXQgYSBjZXJ0YWluIG1pbnV0ZSBvZiBhIGRheSwgdGhlIHJhdGUgb2YgY2hhbmdlIG9mIHRoZSBjbG9zaW5nIHByaWNlIHdpdGggcmVzcGVjdCB0byB0aGF0IHByaWNlIGluIHRoZSBwcmV2aW91cyBtaW51dGUgaXMgcmV0dXJuZWQ/DQogIA0KICBzdW1tYXJpc2UoZGFpbHk9c3VtKHJfY2MsbmEucm09VCksIFJWID0gc3VtKHJfY2NeMiwgbmEucm0gPSBUKSwgVk9MID0gc3VtKFZvbHVtZSkpICU+JSAjZm9yIGVhY2ggc3RvY2sgYW5kIGRheSB3ZSBvYnRhaW4gdGhyZWUgdmFyaWFibGVzOiBkYWlseSwgd2hpY2ggaXMgdGhlIGFjY3VtdWxhdGVkIGNsb3NlZC10by1jbG9zZWQgcmV0dXJucywgUlYsIHdoaWNoIGlzIHRoZSBhY2N1bXVsYXRlZCBTUVVBUkVEIGNsb3NlZC10by1jbG9zZWQgcmV0dXJucywgYW5kIFZPTCwgd2hpY2ggc3VtcyB0aGUgdm9sdW1lcyBvZiB0aGUgbWludXRlcyBvZiB0aGF0IGRheS4gDQogIA0KICB1bmdyb3VwKCkgI0F2b2lkcyBwb3RlbnRpYWwgdW5pbnRlbmRlZCBlcnJvcnMgZHVlIHRvIHRoZSBncm91cGluZw0KDQojd2UgdXNlIGRjYXN0KCkgdG8gdGFrZSBhIGxvb2sgaW4gdGhlIFJWLiBMSFMgdmFyaWFibGUgdmFsdWVzIHdpbGwgYmUgaW4gcm93cy4gUkhTIHZhcmlhYmxlcyB2YWx1ZXMgd2lsbCBiZWNvbWUgY29sdW1uIG5hbWVzLiBmdW4uYWdncmVnYXRlKHZhbHVlLnZhcikgd2lsbCBiZSBjZWxsIHZhbHVlcy4gZGF0YXRhYmxlKCkgaXMgdGhlbiBhIHRhYmxlIG1hZGUgdG8gY29udGFpbiB2YWx1ZXMgZnJvbSBkY2FzdCgpDQojZGNhc3QoKSBpcyBhIGxvbmctdG8td2lkZSByZXNoYXBwaW5nIHRvb2wsIHdoaWxlIG1lbHQoKSBpcyB3aWRlLXRvLWxvbmcNCg0KbWVhc3VyZXNfd2lkZSA8LSBtZWFzdXJlcyAlPiUgc2VsZWN0KFN0b2NrLCBEYXRlLCBSVikgJT4lIGRjYXN0KERhdGUgfiBTdG9jaywgdmFsdWUudmFyID0gJ1JWJykNCg0KZGF0YXRhYmxlKGNiaW5kKERhdGUgPSBydl93aWRlWywxXSwgcm91bmQoUlZfd2lkZVssMTozMF0sNSkpLCAjd2Ugcm91bmQgdGhlIG51bWJlcnMgdG8gY29udGFpbiA1IGRpZ2l0cw0KICAgICAgICAgIA0KICAgICAgICAgIHdpZHRoID0gIjEwMCUiLCANCiAgICAgICAgICBjYXB0aW9uID0gJ0RhaWx5IFJlYWxpemVkIFZvbGF0aWxpdHknLA0KICAgICAgICAgIG9wdGlvbnMgPSBsaXN0KHNjcm9sbFggPSBUKSkNCg0KI3dlIHdhbnQgaXQgdG8gYmUgMzAgKGFzc2V0cykgYW5kIDQzMTAgZGF5cw0KZGltKG1lYXN1cmVzX3dpZGUpIA0KDQojd2Ugd2FudCB0byBjaGVjayBtaXNzaW5nIHZhbHVlcyBwZXIgc3RvY2sgDQptZWFzdXJlc19uYSA8LSBtZWFzdXJlcyAlPiUNCiAgZ3JvdXBfYnkoU3RvY2spICU+JQ0KICBzdW1tYXJpc2UgKG5hX3N0b2NrPXN1bShpcy5uYSkpICU+JQ0KICB1bmdyb3VwKCkNCmBgYA0KDQozLjMgSElTVE9HUkFNUyBjaGVjYXINCg0KYGBge3J9DQptZWFzdXJlcyAlPiUgDQogIGdyb3VwX2J5KEFzc2V0LCBEYXRlKSAlPiUgDQogIG11dGF0ZShSViA9IDEwMCptaW4oUlYsIDAuMDAxKSkgJT4lDQogIG5lc3QoZGF0YSA9IGMoUlYsIFZvbHVtZSwgRGF0ZSkpICU+JSANCiAgbXV0YXRlKHkgPSBtYXAoZGF0YSwgfiBkbm9ybSguJFJWLCBtZWFuID0gbWVhbiguJFJWKSwgc2QgPSBzZCguJFJWKSkgKiAwLjAwMSAqIHN1bSghaXMubmEoLiRSVikpKSkgJT4lIA0KDQpgYGANCg==</div>
 
 
 
