@@ -22,6 +22,7 @@ INTRODUCTION
 
 ```{r}
 library(tidyverse)
+library(dplyr)
 library(tsibble)
 library(feasts)
 library(stringr)
@@ -53,7 +54,8 @@ stocks_list <- mapply(cbind, stocks_list, "Stock" = stock_name, SIMPLIFY=F)
 df <-  do.call("rbind", stocks_list)
 
 # From the above dataframe we will convert the date column and only keep observations starting in 2000
-clean_df <- df %>% select(Asset, Date, Time, Close, Volume) %>%
+clean_df <- df %>% 
+    select(Asset, Date, Time, Close, Volume) %>%
     mutate(Time = sprintf( "%04d", as.numeric(Time))) %>% #?
     mutate(Time = str_replace(Time, "(?=\\d{2}$)", ":")) %>% #?
     mutate(Date = as.Date(df$Date, format = "%m / %d / %Y")) %>% 
@@ -91,7 +93,6 @@ clean_df %>% group_by(Stock, Date) %>%
 
 3.1 ASSESSING VOLATILITY
 ```{r}
-
 #An object rv will be created, containing volumes and close_to_close returns
 
 rv <- clean_data %>% 
@@ -109,9 +110,21 @@ rv <- clean_data %>%
 
 rv_wide <- rv %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
 
-datatable(cbind(Date = rv_wide[,1], round(RV_wide[,2:30],5)), #we round the numbers to contain 5 digits
+datatable(cbind(Date = rv_wide[,1], round(RV_wide[,1:30],5)), #we round the numbers to contain 5 digits
           
           width = "100%", 
           caption = 'Daily Realized Volatility',
           options = list(scrollX = T))
+
+#we want it to be 30 (assets) and 4310 days
+dim(rv_wide) 
+
+#we want to check missing values per stock 
+rv_na <- rv %>%
+  group_by(Stock) %>%
+  summarise (na_stock=sum(is.na)) %>%
+  ungroup()
+  
+
+
 ```
