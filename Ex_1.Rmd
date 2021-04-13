@@ -101,7 +101,7 @@ rv <- clean_data %>%
   
   mutate(r_cc = log(Close) - lag(log(Close))) %>% #this creates a column where, for a stock at a certain minute of a day, the rate of change of the closing price with respect to that price in the previous minute is returned?
   
-  summarise(RV = sum(r_cc^2, na.rm = T), VOL = sum(Volume)) %>% #for each stock and day we obtain the accumulated squared returns and volume of the minutes of that day
+  summarise(RV = sum(r_cc^2, na.rm = T), VOL = sum(Volume)) %>% #for each stock and day we obtain two variables: RV, which is the accumulated squared closed-to-closed returns, and VOL, which sums the volumes of the minutes of that day. 
   
   ungroup() #Avoids potential unintended errors due to the grouping
 
@@ -124,7 +124,11 @@ rv_na <- rv %>%
   group_by(Stock) %>%
   summarise (na_stock=sum(is.na)) %>%
   ungroup()
-  
+```
+
+3.3 HISTOGRAMS
+
+```{r}
 
 
 ```
