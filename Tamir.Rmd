@@ -158,19 +158,18 @@ sss
 plot_list <- vector(mode = 'list', length = length(daily_stock_list))
 for(i in 1:length(daily_stock_list)){
   title <- paste("RV Histogram for", stock_name[i])
-  normal <- data.frame('Normal' = rnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
+  normal <- data.frame(dnorm(daily_stock_list[[i]]$RV, mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
   plot <- ggplot(data = daily_stock_list[[i]], aes(x = RV)) + labs(x = 'RV %', title = title, y= "") + geom_histogram(bins = 100) +
     geom_line(data = normal)
   plot_list[[i]] <- plot
 }
-
+plot_list[[i]]
 ```
 Let's try plotting them all together
 ```{r}
 #ggarrange(plotlist = plot_list, ncol = 5, nrow = 3)
-qplot(dnorm(daily_stock_list[[i]]$RV, mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-normal <- data.frame(dnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
-ggplot(normal, aes(x = Normal)) + geom_line()
+g <- ggplot(daily_stock_list[[i]], aes(x = RV))  + geom_histogram(aes(y = ..density..), binwidth = 0.0001, colour = "black") +stat_function(fun = dnorm, args = list(mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
+
+## On primary axis
+
 ```
-
-
