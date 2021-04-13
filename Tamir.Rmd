@@ -18,6 +18,7 @@ library(kableExtra)
 library(DT)
 library(htmltools)
 library(reshape2) #to be used with tidyverse and gglopt2
+library(ggpubr)
 ```
 
 
@@ -79,47 +80,77 @@ make_daily_data <- function(clean_ticker){
 ```
 Now, we apply this function for all tickers, just like before.
 ```{r}
-daily_AXP <- make_daily_data(AXP)
-daily_BA <-make_daily_data(BA)
-daily_CAT <- make_daily_data(CAT)
-daily_CSCO <- make_daily_data(CSCO)
-daily_CVX <- make_daily_data(CVX)
-daily_DD <-make_daily_data(DD)
-daily_DIS <- make_daily_data(DIS)
-daily_GE <-make_daily_data(GE)
-daily_GS <-make_daily_data(GS)
-daily_HD <-make_daily_data(HD)
-daily_IBM <- make_daily_data(IBM)
-daily_INTC <- make_daily_data(INTC)
-daily_JNJ <- make_daily_data(JNJ)
-daily_JPM <- make_daily_data(JPM)
-daily_KO <-make_daily_data(KO)
-daily_MCD <- make_daily_data(MCD)
-daily_MMM <- make_daily_data(MMM)
-daily_MRK <-make_daily_data(MRK)
-daily_MSFT <- make_daily_data(MSFT)
-daily_NKE <-make_daily_data(NKE)
-daily_PFE <- make_daily_data(PFE)
-daily_PG <-make_daily_data(PG)
-daily_SPY <- make_daily_data(SPY)
-daily_TRV <- make_daily_data(TRV)
-daily_UNH <-make_daily_data(UNH)
-daily_UTX <- make_daily_data(UTX)
-daily_V <- make_daily_data(V)
-daily_VZ <-make_daily_data(VZ)
-daily_WMT <- make_daily_data(WMT)
-daily_XOM <- make_daily_data(XOM)
+daily_stock_list <- vector(mode = 'list', length = 30) ##Initialize the daily stock list.
+for (i in 1:length(stock_list)) {
+
+  daily_stock_df <- make_daily_data(stock_list[[i]])
+  daily_stock_list[[i]] <- daily_stock_df[,]
+  
+}
+names(daily_stock_list) <- stock_name
 ```
 
 Now, for a simple plot:
 
 ```{r}
-ggplot(daily_AXP, aes(x= RV)) + geom_histogram(binwidth = 0.001) 
-```
-So maybe having multiple objects is SHITTY to plot all at once like Otavio did. Can I fix it? 
+plot_list<- vector(mode = 'list', length = 30)
+for(stock in daily_stock_list){
+ #plot <- ggplot(stock, aes(x = RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", stock_name[stock],sep = ""))
+ plot_list[stock] <- plot
+}
 
+```
+Testing out this package that groups graphs. 
 ```{r}
-z <- cbind(daily_AXP, daily_BA)
+data("ToothGrowth")
+head(ToothGrowth)
+mtcars$name <- rownames(mtcars)
+mtcars$cyl <- as.factor(mtcars$cyl)
+bxp <- ggboxplot(ToothGrowth, x = "dose", y = "len",
+                 color = "dose", palette = "jco") + labs(title = 'bolinh')
+
+# Dot plot (dp)
+dp <- ggdotplot(ToothGrowth, x = "dose", y = "len",
+                 color = "dose", palette = "jco", binwidth = 1)
+bp <- ggbarplot(mtcars, x = "name", y = "mpg",
+          fill = "cyl",               # change fill color by cyl
+          color = "white",            # Set bar border colors to white
+          palette = "jco",            # jco journal color palett. see ?ggpar
+          sort.val = "asc",           # Sort the value in ascending order
+          sort.by.groups = TRUE,      # Sort inside each group
+          x.text.angle = 90           # Rotate vertically x axis texts
+          )
+
+# Scatter plots (sp)
+sp <- ggscatter(mtcars, x = "wt", y = "mpg",
+                add = "reg.line",               # Add regression line
+                conf.int = TRUE,                # Add confidence interval
+                color = "cyl", palette = "jco", # Color by groups "cyl"
+                shape = "cyl"                   # Change point shape by groups "cyl"
+                )+
+  stat_cor(aes(color = cyl), label.x = 3)       # Add correlation coefficient
+ggarrange(bxp, dp, bp + rremove("x.text"), 
+          labels = c("A", "B", "C"),
+          ncol = 2, nrow = 2)
+```
+sss
+```{r}
+plot_list <- vector(mode = 'list', length = length(daily_stock_list))
+for(i in 1:length(daily_stock_list)){
+  title <- paste("RV Histogram for", stock_name[i])
+  normal <- data.frame('Normal' = rnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
+  plot <- ggplot(data = daily_stock_list[[i]], aes(x = RV)) + labs(x = 'RV %', title = title, y= "") + geom_histogram(bins = 100) +
+    geom_line(data = normal)
+  plot_list[[i]] <- plot
+}
+
+```
+Let's try plotting them all together
+```{r}
+#ggarrange(plotlist = plot_list, ncol = 5, nrow = 3)
+qplot(dnorm(daily_stock_list[[i]]$RV, mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
+normal <- data.frame(dnorm(n = nrow(daily_stock_list[[i]]), mean = mean(daily_stock_list[[i]]$RV), sd = sd(daily_stock_list[[i]]$RV)))
+ggplot(normal, aes(x = Normal)) + geom_line()
 ```
 
 
