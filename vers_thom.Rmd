@@ -174,6 +174,13 @@ RV_tsibble <- complete_daily_df %>% select(Stock, Date, RV) %>%  as_tsibble(key 
 
 RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
+
+#estimating an AR(1) process for RV of stock AXP:
+#RV_AXP <- RV_tsibble %>% filter(Stock == "AXP")
+#RV_AXP_AR1 <- arima(RV_AXP$RV , order = c(1, 0, 0))
+
+
+
 ```
 
 **ACF for log_RV**
@@ -185,3 +192,5 @@ log_RV_tsibble <- complete_daily_df %>% select(Stock, Date, log_RV) %>%  as_tsib
 log_RV_tsibble %>% ACF(log_RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
 ```
+
+Looking at the ACF for both RV and log(RV), it is easy to notice that the plots present an approximate linear decay, whereas theoretical autoregressive processes contain ACFs that decay exponentially. 
