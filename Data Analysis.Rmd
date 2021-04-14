@@ -1,8 +1,7 @@
 ---
 title: "Exercise 1"
 output: html_notebook
-fig_width: 6 
-fig_height: 4 
+
 ---
 LOADING PACKAGES:
 
@@ -109,22 +108,24 @@ complete_daily_df <- bind_rows(daily_stock_list, .id = "column_label")
 ##I just want the name to be Stock:
 names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
 ```
+```{r}
+##I really want to see the max value for all RV to establish plot limits.
+
+z<- complete_daily_df %>% group_by(Stock) %>% summarise(max(RV))
+names(z) <- c('Stock', 'MaxRV')
+maxRVplot <-z %>% summarise(mean(MaxRV))
+```
 
 
 Now, for a simple plot:
 
-```{r fig.height = 12, fig.width = 10}
+```{r fig.height = 30, fig.width = 14}
 ggplot(complete_daily_df, aes(x = RV)) +
-  geom_histogram(binwidth = 0.0001) +
-  labs(title = "RV Histograms", x = "", y = "") +
-  facet_wrap(~ Stock, ncol = 2) +
+  geom_histogram(aes(y = ..density..),bins= 200, color = "darkblue", fill = "lightblue") + xlim(0, maxRVplot[[1]]) +
+  labs(title = "RV Histograms", x = "", y = "")   +
+  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
   theme_minimal()
 
-daily_stock_list_1_df <- as.data.frame(daily_stock_list[1])
-
-plot <- ggplot(daily_stock_list_1_df, aes(x = AXP.RV)) + geom_histogram(bins = 100) +labs(title = paste("RV Histogram for ", "AXP",sep = ""))
-
-plot
 
 ```
 
