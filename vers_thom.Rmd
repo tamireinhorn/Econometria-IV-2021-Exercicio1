@@ -112,51 +112,54 @@ names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
 
 **Histogram of RV:**
 
-```{r}
-
-#test <- complete_daily_df %>%
- # filter(Stock=="AXP")
-  #ggplot(test,aes(x=RV))+geom_histogram()
-
+```{r fig.height = 30, fig.width = 14}
 ggplot(complete_daily_df, aes(x = RV)) +
-  geom_histogram(binwidth = 0.00001) +
-  labs(title = "RV Histograms", x = "", y = "") +
-  facet_wrap(~ Stock, ncol = 4) +
+  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
+  labs(title = "RV Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
   theme_minimal()
-
 ```
 
 **Histogram of log RV:**
 
-```{r}
+```{r fig.height = 30, fig.width = 14}
 
 ggplot(complete_daily_df, aes(x = log_RV)) +
-  geom_histogram() +
-  labs(title = "log(RV) Histograms", x = "", y = "") +
-  facet_wrap(~ Stock, ncol = 4) +
+  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
+  labs(title = "log(RV) Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
   theme_minimal()
+
 ```
 
 **Time Series of RV**
 
-```{r}
+```{r fig.height = 30, fig.width = 14}
 
-ggplot(complete_daily_df, aes(x = Date, y= 100*RV)) +
-  geom_line() +
-  facet_wrap(~ Stock, ncol = 2, scales = 'free') +
+#test <- complete_daily_df %>%
+#        filter(Stock=="AXP")
+#ggplot(test,aes(x=Date, y=100*RV))+geom_line
+
+  plot <- ggplot(complete_daily_df, aes(x = Date, y= 100*RV)) +
+  geom_line(size=1) +
+  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
   labs(x = "", y = "", title = 'RV Time Series (in percentage terms, %)') +
   theme_bw() + theme(legend.position = "none")
+
+  plot
+ 
 
 ```
 
 **Time Series of log_RV**
 
-```{r}
-ggplot(complete_daily_df, aes(x = Date, y= 100*log_RV)) +
-  geom_line() +
-  facet_wrap(~ Stock, ncol = 2, scales = 'free') +
-  labs(x = "", y = "", title = 'log_RV Time Series (in percentage terms, %)') +
+```{r fig.height = 30, fig.width = 14}
+
+  plot_log_RV <- ggplot(complete_daily_df, aes(x = Date, y= 100*log_RV)) +
+  geom_line(size=1) +
+  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
+  labs(x = "", y = "", title = 'log(RV) Time Series (in percentage terms, %)') +
   theme_bw() + theme(legend.position = "none")
+
+  plot_log_RV
 ```
 
 **AUTOCORRELATION** :
@@ -165,7 +168,7 @@ We will use function ACF from the feasts package, which requires data in questio
 
 **ACF for RV**:
 
-```{r}
+```{r fig.height = 40, fig.width = 14}
 
 RV_tsibble <- complete_daily_df %>% select(Stock, Date, RV) %>%  as_tsibble(key = 'Stock', index = 'Date', regular = FALSE)
 
@@ -175,10 +178,10 @@ RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'La
 
 **ACF for log_RV**
 
-```{r}
+```{r fig.height = 40, fig.width = 14}
 
 log_RV_tsibble <- complete_daily_df %>% select(Stock, Date, log_RV) %>%  as_tsibble(key = 'Stock', index = 'Date', regular = FALSE)
 
-log_RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
+log_RV_tsibble %>% ACF(log_RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
 ```
