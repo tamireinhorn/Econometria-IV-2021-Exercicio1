@@ -121,9 +121,8 @@ Now, for a simple plot:
 
 ```{r fig.height = 30, fig.width = 14}
 ggplot(complete_daily_df, aes(x = RV)) +
-  geom_histogram(aes(y = ..density..),bins= 200, color = "darkblue", fill = "lightblue") + xlim(0, maxRVplot[[1]]) +
-  labs(title = "RV Histograms", x = "", y = "")   +
-  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
+  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
+  labs(title = "RV Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
   theme_minimal()
 
 
