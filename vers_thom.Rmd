@@ -198,17 +198,20 @@ Looking at the ACF for both RV and log(RV), it is easy to notice that the plots 
 
 **3. BENCHMARK MODEL**
 
-We will now conduct an estimation of a HAR Model for the realized volatility for each Stock in our sample.
+We will now conduct an estimation of a HAR Model for the realized volatility for each Stock in our sample. With the estimated coefficients, we will simulate a HAR process in order to obtain a theoretical ACF and compare it with the empirical one.
 
 ```{R}
 
-#First, let`s estimate for AXP
-RV_tsibble_AXP <- RV_tsibble %>% 
-  filter(Stock=="AXP") %>%
-  select(Stock)
+#We can group RV_tssible by stock and create an object FitHAR <- HAREstimate(RM = RV, periods = c(1,5,22)) to each group using group_map()
 
-HAREstimate(RV_tsibble_AXP, BPV = NULL, RQ = NULL, periods = c(1,5,22),
-periodsJ = NULL, periodsRQ = NULL, type = "HAR",
-insanityFilter = TRUE, h = 1)
+#extract the estimated coefficients:
+#coef(FitHAR)
+
+#simulate a theoretical series using estimated coefficients
+#sim <- HARSimulate(len=1500, periods = c(1, 5, 22),
+#coef = coef(FitHAR), errorTermSD = 0.001)
+
+#generate ACF using simulation above
+# ACF(sim, lag_max = definir) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
 ```
