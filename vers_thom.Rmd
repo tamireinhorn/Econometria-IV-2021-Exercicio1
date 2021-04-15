@@ -179,6 +179,34 @@ RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'La
 #RV_AXP <- RV_tsibble %>% filter(Stock == "AXP")
 #RV_AXP_AR1 <- arima(RV_AXP$RV , order = c(1, 0, 0))
 
+#Via TidyVerse, we already generate the ACFs for both level and log RV
+
+autocorr_f <- function(df){
+  
+  autocorr <- data.frame(matrix(data = seq(0,29,1), nrow = 30, ncol = 1))
+  names(autocorr) <- c("stock_name")   #seq(0,29,1) indicate that there are 30 lags of estimated ACFs, for each Stock. The above function generates, thus, one dataframe listing ACFs, for each Stock.
+  
+  autocorr$autocorr_level = acf(complete_daily_df$RV, lag.max = 29, pl = F)[[1]] %>% as.numeric() 
+  autocorr$autocorr_log = acf(complete_daily_df$log_RV, lag.max = 29, pl = F)[[1]] %>% as.numeric()     #[[1]] selects the the values of the ACFs themselves, as the function acf() generates other objects that are not of interest
+  
+  #ACFs for AR Model
+  
+  autocorr$autocorr_ar_level = ARMAacf(ar = arima(complete_daily_df$RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 29) %>% as.numeric()   
+  
+#The ARMAacf simulates a model for coefficients we give as imput, and returns the ACFs. @coef[1] selects only the auto-regressive parameter, and not the intercept.
+                                     
+  autocorr$autocorr_ar_log = ARMAacf(ar = arima(log(complete_daily_df$log_RV), order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 29) %>% as.numeric()
+  
+  return(autocorr)
+     
+}
+
+#the argument autocorr that is taken by the function created above is here defined as being complete_daily_df, which we group_by() and then apply the function
+
+autocorr <- complete_daily_df %>% 
+  group_by(Stock) %>% 
+  group_modify(~ autocorr_f(.x))
+
 
 
 ```
@@ -197,7 +225,8 @@ Looking at the ACF for both RV and log(RV), it is easy to notice that the plots 
 
 **3. BENCHMARK MODEL**
 
-We will now conduct an estimation of a HAR Model for the realized volatility for each Stock in our sample. With the estimated coefficients, we will simulate a HAR process in order to obtain a theoretical ACF and compare it with the empirical one.
+We will now conduct an estimation of a HAR Model for the realized volatility for each Stock in our sample. With the estimated coefficients, we will simulate a HAR process in order to obtain a theoretical ACF and compare it with the empirical one. Before doing these procedures, we can already note that, from the empirical ACFs calculated over our data, the realised volatility presents a strong persistence over time, and this can be expressed by the rather linear decay observed in the ACF functions. Corsi (2009) notes that the purpose of reproducing the
+long memory of empirical volatility seems be fully achieved by estimating HAR processes for actual data. If we focus on the period of time spanning our sample, approximately 17 years, allowing for less lags, there is a relatively linear decay in the figures of Corsi (2009) that indicate that the HAR model can be effective in reproducing actual voltatiliry.
 
 ```{R}
 
@@ -209,7 +238,7 @@ har_est <- RV_tsibble %>%
 
 #extracting the estimated coefficients and simulating theoretical processes: We can do these tasks through a for_loop, or group_map() in tidyverse.
 
-#for_loop
+#for loop
 
 har_simulations <- vector(mode="list", length=30)
 
