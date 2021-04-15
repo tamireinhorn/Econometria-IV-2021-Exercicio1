@@ -175,7 +175,6 @@ RV_tsibble <- complete_daily_df %>% select(Stock, Date, RV) %>%  as_tsibble(key 
 
 RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
-
 #estimating an AR(1) process for RV of stock AXP:
 #RV_AXP <- RV_tsibble %>% filter(Stock == "AXP")
 #RV_AXP_AR1 <- arima(RV_AXP$RV , order = c(1, 0, 0))
@@ -202,16 +201,32 @@ We will now conduct an estimation of a HAR Model for the realized volatility for
 
 ```{R}
 
-#We can group RV_tssible by stock and create an object FitHAR <- HAREstimate(RM = RV, periods = c(1,5,22)) to each group using group_map()
+#Below we group the data (in tsibble format) by stock, and estimate the HAR model for each stock, using tidyverse`s feature group_map() and the HARestimate function.
 
-#extract the estimated coefficients:
-#coef(FitHAR)
+har_est <- RV_tsibble %>% 
+  group_by(Stock) %>%
+  group_map(.tbl=RV_tsibble$RV, .f = ~HAREstimate(RM = RV_tsibble$RV, periods = c(1,5,22)) )
 
-#simulate a theoretical series using estimated coefficients
-#sim <- HARSimulate(len=1500, periods = c(1, 5, 22),
-#coef = coef(FitHAR), errorTermSD = 0.001)
+#extracting the estimated coefficients and simulating theoretical processes: We can do these tasks through a for_loop, or group_map() in tidyverse.
+
+#for_loop
+
+har_simulations <- vector(mode="list", length=30)
+
+for (i in 1:30) {
+  har_simulations[i] <- paste("har_simulation",stock_name[i], sep="_" )
+  har_simulations[[i]] <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est[[i]]), errorTermSD = 0.001)   
+  #colocar número certo de dias (contar quantos dias cada stock tem?)
+}
+
+
+
+#tidyverse: tentar
 
 #generate ACF using simulation above
 # ACF(sim, lag_max = definir) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
+
+har_acf <- vector(mode="list", length=30)
+
 
 ```
