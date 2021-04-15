@@ -219,14 +219,17 @@ for (i in 1:30) {
   #colocar número certo de dias (contar quantos dias cada stock tem?)
 }
 
-
-
 #tidyverse: tentar
 
-#generate ACF using simulation above
-# ACF(sim, lag_max = definir) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
+#generating and plotting ACFs describing the data simulated in the above.
+#tentar via tidyverse pra usar face_wrap
 
 har_acf <- vector(mode="list", length=30)
+for (i in 1:30) {
+  har_acf[i] <- paste("har_acf",stock_name[i], sep="_" )
+  har_acf[[i]] <- acf(har_simulations[[i]], lag.max = 200)
+  plot(har_acf[[i]])
+}
 
 
 ```
