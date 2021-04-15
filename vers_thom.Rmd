@@ -9,6 +9,7 @@ fig_height: 4
 
 ```{r}
 library(tidyverse)
+library(HARModel)
 library(dplyr)
 library(tsibble)
 library(feasts)
@@ -112,51 +113,54 @@ names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
 
 **Histogram of RV:**
 
-```{r}
-
-#test <- complete_daily_df %>%
- # filter(Stock=="AXP")
-  #ggplot(test,aes(x=RV))+geom_histogram()
-
+```{r fig.height = 30, fig.width = 14}
 ggplot(complete_daily_df, aes(x = RV)) +
-  geom_histogram(binwidth = 0.00001) +
-  labs(title = "RV Histograms", x = "", y = "") +
-  facet_wrap(~ Stock, ncol = 4) +
+  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
+  labs(title = "RV Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
   theme_minimal()
-
 ```
 
 **Histogram of log RV:**
 
-```{r}
+```{r fig.height = 30, fig.width = 14}
 
 ggplot(complete_daily_df, aes(x = log_RV)) +
-  geom_histogram() +
-  labs(title = "log(RV) Histograms", x = "", y = "") +
-  facet_wrap(~ Stock, ncol = 4) +
+  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
+  labs(title = "log(RV) Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
   theme_minimal()
+
 ```
 
 **Time Series of RV**
 
-```{r}
+```{r fig.height = 30, fig.width = 14}
 
-ggplot(complete_daily_df, aes(x = Date, y= 100*RV)) +
-  geom_line() +
-  facet_wrap(~ Stock, ncol = 2, scales = 'free') +
+#test <- complete_daily_df %>%
+#        filter(Stock=="AXP")
+#ggplot(test,aes(x=Date, y=100*RV))+geom_line
+
+  plot <- ggplot(complete_daily_df, aes(x = Date, y= 100*RV)) +
+  geom_line(size=1) +
+  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
   labs(x = "", y = "", title = 'RV Time Series (in percentage terms, %)') +
   theme_bw() + theme(legend.position = "none")
+
+  plot
+ 
 
 ```
 
 **Time Series of log_RV**
 
-```{r}
-ggplot(complete_daily_df, aes(x = Date, y= 100*log_RV)) +
-  geom_line() +
-  facet_wrap(~ Stock, ncol = 2, scales = 'free') +
-  labs(x = "", y = "", title = 'log_RV Time Series (in percentage terms, %)') +
+```{r fig.height = 30, fig.width = 14}
+
+  plot_log_RV <- ggplot(complete_daily_df, aes(x = Date, y= 100*log_RV)) +
+  geom_line(size=1) +
+  facet_wrap(~ Stock, ncol = 4, scales = 'free') +
+  labs(x = "", y = "", title = 'log(RV) Time Series (in percentage terms, %)') +
   theme_bw() + theme(legend.position = "none")
+
+  plot_log_RV
 ```
 
 **AUTOCORRELATION** :
@@ -165,20 +169,67 @@ We will use function ACF from the feasts package, which requires data in questio
 
 **ACF for RV**:
 
-```{r}
+```{r fig.height = 40, fig.width = 14}
 
 RV_tsibble <- complete_daily_df %>% select(Stock, Date, RV) %>%  as_tsibble(key = 'Stock', index = 'Date', regular = FALSE)
 
 RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
 
+#estimating an AR(1) process for RV of stock AXP:
+#RV_AXP <- RV_tsibble %>% filter(Stock == "AXP")
+#RV_AXP_AR1 <- arima(RV_AXP$RV , order = c(1, 0, 0))
+
+
+
 ```
 
 **ACF for log_RV**
 
-```{r}
+```{r fig.height = 40, fig.width = 14}
 
 log_RV_tsibble <- complete_daily_df %>% select(Stock, Date, log_RV) %>%  as_tsibble(key = 'Stock', index = 'Date', regular = FALSE)
 
-log_RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
+log_RV_tsibble %>% ACF(log_RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
+
+```
+
+Looking at the ACF for both RV and log(RV), it is easy to notice that the plots present an approximate linear decay, whereas theoretical autoregressive processes contain ACFs that decay exponentially. 
+
+**3. BENCHMARK MODEL**
+
+We will now conduct an estimation of a HAR Model for the realized volatility for each Stock in our sample. With the estimated coefficients, we will simulate a HAR process in order to obtain a theoretical ACF and compare it with the empirical one.
+
+```{R}
+
+#Below we group the data (in tsibble format) by stock, and estimate the HAR model for each stock, using tidyverse`s feature group_map() and the HARestimate function.
+
+har_est <- RV_tsibble %>% 
+  group_by(Stock) %>%
+  group_map(.tbl=RV_tsibble$RV, .f = ~HAREstimate(RM = RV_tsibble$RV, periods = c(1,5,22)) )
+
+#extracting the estimated coefficients and simulating theoretical processes: We can do these tasks through a for_loop, or group_map() in tidyverse.
+
+#for_loop
+
+har_simulations <- vector(mode="list", length=30)
+
+for (i in 1:30) {
+  har_simulations[i] <- paste("har_simulation",stock_name[i], sep="_" )
+  har_simulations[[i]] <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est[[i]]), errorTermSD = 0.001)   
+  #colocar número certo de dias (contar quantos dias cada stock tem?)
+}
+
+#tidyverse: tentar
+
+#generating and plotting ACFs describing the data simulated in the above.
+#tentar via tidyverse pra usar face_wrap
+
+har_acf <- vector(mode="list", length=30)
+for (i in 1:30) {
+  har_acf[i] <- paste("har_acf",stock_name[i], sep="_" )
+  har_acf[[i]] <- acf(har_simulations[[i]], lag.max = 200)
+  plot(har_acf[[i]])
+}
+
 
 ```
