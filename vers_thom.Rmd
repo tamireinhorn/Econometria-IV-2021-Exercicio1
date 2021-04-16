@@ -8,6 +8,8 @@ fig_height: 4
 ## **1. LOADING PACKAGES**
 
 ```{r}
+
+library(dreamerr)
 library(tidyverse)
 library(HARModel)
 library(dplyr)
@@ -231,40 +233,28 @@ autocorr_har_f <- function(df){
   autocorr_har$autocorr_level = acf(df$RV, lag.max = 29, pl = F)[[1]] %>% as.numeric() 
   autocorr_har$autocorr_log = acf(df$log_RV, lag.max = 29, pl = F)[[1]] %>% as.numeric()     #same as for the AR case
   
-  #generating HAR models
+#Estimating the HAR Models
   
-  #Below we group the data by stock, and estimate the HAR model for each stock, using tidyverse`s feature group_map() and the HARestimate function.
+har_est_rv <- HAREstimate(RM = df$RV, periods = c(1,5,22))
 
-har_est_rv <- df %>% 
-  group_by(Stock) %>%
-  group_map(.tbl=df$RV, .f = ~HAREstimate(RM = df$RV, periods = c(1,5,22)) )
+har_est_log_rv <- HAREstimate(RM = df$log_RV, periods = c(1,5,22))
 
-har_est_log_rv <- df %>% 
-  group_by(Stock) %>%
-  group_map(.tbl=df$log_RV, .f = ~HAREstimate(RM = df$log_RV, periods = c(1,5,22)) )
+#Extracting the estimated coefficients and simulating theoretical processes with those coefficients:
 
+har_sim_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
 
-#extracting the estimated coefficients and simulating theoretical processes:
+har_sim_log_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_log_rv), errorTermSD = 0.001) 
 
-har_sim_rv <- df %>% 
-  group_by(Stock) %>%
-  group_map(.tbl=df$RV, .f = ~HARSimulate(len=1500, periods = c(1, 5, 22), coef=har_est_rv, errorTermSD = 0.001) ) #checar se coef=har_est_rv imputa os coeficientes estimados acima para a stock em questão que estamos, ídem abaixo. Acho que o faz pois os próprios coeficientes foram estimados por stock.
-    
-har_sim_log_rv <- df %>% 
-  group_by(Stock) %>%
-  group_map(.tbl=df$log_RV, .f = ~HARSimulate(len=1500, periods = c(1, 5, 22), coef=har_est_log_rv, errorTermSD = 0.001) )
-
-  #ACFs for HAR Model
+#ACFs for simulated HAR Models
   
-  autocorr_har$autocorr_har_level = acf(har_sim_rv, lag.max = 29) %>% as.numeric()   
-  
+autocorr_har$autocorr_har_level = acf(har_sim_rv, lag.max = 29) %>% as.numeric()   
 
-  autocorr_har$autocorr_har_log = acf(har_sim_log_rv, lag.max = 29) %>% as.numeric()
+autocorr_har$autocorr_har_log = acf(har_sim_log_rv, lag.max = 29) %>% as.numeric()
   
   return(autocorr_har)
 }
 
-#the argument autocorr that is taken by the function created above is here defined as being complete_daily_df, which we group_by() and then apply the function
+#the argument autocorr that is taken by the function created above is here defined as being complete_daily_df, our working dataframe, which we group_by() and then apply the function
 
 autocorr_har <- complete_daily_df %>% 
   group_by(Stock) %>% 
@@ -277,8 +267,5 @@ autocorr_har <- complete_daily_df %>%
 Below, we will first conduct a rolling window estimation for RV of company AXP and try to generalize the method to the other companies via tidyverse and group_map() or group_modify()
 
 ```{r}
-
-testaxp <- complete_daily_df %>% filter(Stock=="AXP")
-
 
 ```
