@@ -26,6 +26,7 @@ library(DT)
 library(htmltools)
 library(reshape2) #to be used with tidyverse and gglopt2
 library(ggpubr)
+library(glmnet)
 ```
 
 ## **2. DATA PREPARATION**
@@ -267,5 +268,51 @@ autocorr_har <- complete_daily_df %>%
 Below, we will first conduct a rolling window estimation for RV of company AXP and try to generalize the method to the other companies via tidyverse and group_map() or group_modify()
 
 ```{r}
+
+df <- complete_daily_df %>% filter(Stock == 'AXP')
+
+
+##Rolling Window of size N
+N <- 1000 #This is the size of our rolling window
+days <- dim(df)[[1]] ##This is the complete size of our sample!
+i = 1
+lambda_seq <- 10^seq(2, -2, by = -.1) ##I need to create a sequence of possible lambdas, just to use.
+##Later, this will be the hyperparameter tuning we will decide!
+ ##First, how do I estimate a ridge regression with all the data?
+## GLMNET only works with matrices. Therefore, we need to convert the data, separating it between dependent and independent:
+x_df <- complete_daily_df %>% filter(Stock != 'SPY')
+
+## The dependent variable is RV of all other stocks other than SPY. Should we keep V out as well?
+
+ridge_model <- glmnet()
+##I need to be in observation 22 so that I have the past 21 observations for RV_{m,t}
+##My rolling window will be of size 10. ##So i need to have
+##22 to 31, ##23 to 32, etc
+N <- 3
+i <- 1
+print(i+21)
+##18 = (22) - x 
+##18 - 22 = -x
+## x= 6
+##18 = (21 + i) -6
+print(N+21+i-1)
+print(21 + i -4)
+small_df <- df[(i+21):(N+i+21-1),]  
+##For RV_m, i need 22 observations, from 22 to 1
+##This puts me at i + 21, the first element of the interval
+##To i.
+##But this could be read as i + 21 (i = 1, 22) to (i+ 21) - (22, intervalsize- 1)) 
+#RV_W is 5, so i+21 (i=1, 22) to 18, right?
+#to (i+ 21) - (5) -1 => 22 - 4 = 18 
+RV_m <- 1/22 *sum((df$RV[(i+21):i]))
+RV_w <- 1/5 * sum(df$RV[(i+21):(i+21-4)])
+RV_t <- df$RV[(i+21)-1]
+##My intervals are then i + 21 to N + 21 + i -1!
+
+#Extracting the estimated coefficients and simulating theoretical processes with those coefficients:
+
+har_sim_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
+
+acf(har_sim_rv@simulation, lag.max = 29)
 
 ```
