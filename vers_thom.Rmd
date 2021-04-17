@@ -259,6 +259,24 @@ autocorr_har$autocorr_har_log = acf(har_sim_log_rv, lag.max = 29) %>% as.numeric
 autocorr_har <- complete_daily_df %>% 
   group_by(Stock) %>% 
   group_modify(~ autocorr_har_f(.x))
+
+#TESTANDO PARA AXP
+
+autocorr_har <- data.frame(matrix(data = seq(0,29,1), nrow = 30, ncol = 1))
+names(autocorr) <- c("Lag")
+  
+autocorr_har$autocorr_level = acf(axp$RV, lag.max = 29, pl = F)[[1]] %>% as.numeric() 
+
+har_est_rv <- HAREstimate(RM = axp$RV, periods = c(1,5,22))
+
+har_sim_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
+
+head(har_sim_rv)
+
+autocorr_har$autocorr_har_level = acf(har_sim_rv, lag.max = 29) %>% as.numeric()   #aqui está dando problema
+
+simulation(har_sim_rv)
+
 ```
 
 
