@@ -27,6 +27,9 @@ library(htmltools)
 library(reshape2) #to be used with tidyverse and gglopt2
 library(ggpubr)
 library(glmnet)
+library(maditr)
+source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
+
 ```
 
 ## **2. DATA PREPARATION**
@@ -280,7 +283,7 @@ lambda_seq <- 10^seq(2, -2, by = -.1) ##I need to create a sequence of possible 
 ##Later, this will be the hyperparameter tuning we will decide!
  ##First, how do I estimate a ridge regression with all the data?
 ## GLMNET only works with matrices. Therefore, we need to convert the data, separating it between dependent and independent:
-x_df <- complete_daily_df %>% filter(Stock != 'SPY')
+
 
 ## The dependent variable is RV of all other stocks other than SPY. Should we keep V out as well?
 
@@ -288,6 +291,7 @@ ridge_model <- glmnet()
 ##I need to be in observation 22 so that I have the past 21 observations for RV_{m,t}
 ##My rolling window will be of size 10. ##So i need to have
 ##22 to 31, ##23 to 32, etc
+##My intervals are then i + 21 to N + 21 + i -1!
 N <- 3
 i <- 1
 print(i+21)
@@ -307,12 +311,49 @@ small_df <- df[(i+21):(N+i+21-1),]
 RV_m <- 1/22 *sum((df$RV[(i+21):i]))
 RV_w <- 1/5 * sum(df$RV[(i+21):(i+21-4)])
 RV_t <- df$RV[(i+21)-1]
-##My intervals are then i + 21 to N + 21 + i -1!
-
-#Extracting the estimated coefficients and simulating theoretical processes with those coefficients:
-
-har_sim_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
-
-acf(har_sim_rv@simulation, lag.max = 29)
-
+##I also need to get all stocks but SPY in a single line
+x_df <- complete_daily_df %>% filter(Stock != 'SPY')
+##Now, I want to make this WIDE
+x_long <- x_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
+RV_wide <-  x_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
+logRV_wide <-  x_df %>% select(Stock, Date, log_RV) %>% dcast(Date ~ Stock, value.var = 'log_RV')
+RV_wide$RV_m <- RV_m
+days <-  dim(key_stock_df)[[1]] ##This will give us the length of our 
+month <- 22
+week <- 5
+key_stock_df <- df
+window_size <- 3
+ RV_m <- vector(mode = list, length = 3)
+day_list <- sort(unique(key_stock_df$Date)) 
+for(i in 1:2){
+    print('days')
+    print(i)
+    print('Beg variable for this day is')
+    beg <- i + (month - 1) ##Just to clear notation, I wanted to create this variable for the interval's beggining.
+    print(beg)
+    key_window <- key_stock_df[(beg):(window_size - 1 + beg),]  ##This creates the data subset we wish to use ##TODO: should this use the COMPLETE df or the separate?
+   ## other_window <- wide_other_stock_df [(beg):(window_size - 1 +beg ),]
+    
+    ##However, this does not seal the deal. Once inside this window, we need to construct the variables. This requires us to loop again?
+    ##If our window_size is indeed 3, and we have observations 22, 23, 24, we need to build RV_m for all these
+    ##RV_{m, 22} is 1/22 * sum(RV of 22 to 1), RV_{m,23} is 1/22 * sum(RV of 23 to 2), etc. 
+    ##So RV_{m,i} needs to go from i+month-1 to i, then from i+month-1+1 to i+1, etc. 
+    ##For week, we start at i+beg (22) and we need to go until 18, which means (i+beg) - (week - 1) = 
+    RV_m <- vector(mode = 'list', length = window_size)
+    RV_w <-vector(mode = 'list', length = window_size)
+    RV_t <- vector(mode = 'list', length = window_size)
+      for(k in 0:(window_size-1)){
+        print('k is:')
+        print(k)
+        print('tge begining is ')
+        print(beg+k)
+        
+        print('end is')
+        print(beg+k - (week-1))
+        RV_m[[(k+1)]] <- (1/month) * sum(( key_stock_df$RV[(beg+k):(i+k)]))
+        RV_w[[(k+1)]]<- (1/week) * sum(( key_stock_df$RV[(beg+k):(beg+k - (week-1))]))
+        RV_t[[(k+1)]] <- key_stock_df$RV[beg+k-1]
+      }
+    ddf <- data.frame(Date = day_list, RVm = RV_m)
+  }
 ```
