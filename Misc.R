@@ -1,5 +1,5 @@
 ###This should be the R script where we save our functions, because this makes it all much tidier.
-
+RidgeRegression <- function()
 RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month = 22, df, model_type = 'level'){
   ##The key_stock argument defines the stock over which we want to model. It defaults to SPY since it is the ETF.
   
@@ -29,7 +29,8 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
   ##The end of my interval will be at window_Size -1  + i + month -1 => 2 + 22 = 24
  
   
-  for(i in 1:days){
+  for(i in 1:days){ ##This cannot go on until days, this needs to stop at the last possible window. ##days - window_size +1 maybe
+    
     beg <- i + (month - 1) ##Just to clear notation, I wanted to create this variable for the interval's beginning.
     key_window <- key_stock_df[(beg):(window_size - 1 + beg),]  ##This creates the data subset we wish to use ##TODO: should this use the COMPLETE df or the separate?
     other_window <- wide_other_stock_df [(beg):(window_size - 1 +beg ),]
@@ -42,11 +43,38 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     RV_m <- vector(mode = 'list', length = window_size)
     RV_w <- vector(mode = 'list', length = window_size)
     RV_t <- vector(mode = 'list', length = window_size)
+    current_date <- vector(mode = 'list', length = window_size)
+    past_date <- vector(mode = 'list', length = window_size)
+    date_list <- key_stock_df$Date
       for(k in 0:(window_size-1)){
         RV_m[[(k+1)]] <- (1/month) * sum(( key_stock_df$RV[(beg+k):(i+k)]))
         RV_w[[(k+1)]]<- (1/week) * sum(( key_stock_df$RV[(beg+k):(beg+k - (week-1))]))
         RV_t[[(k+1)]] <- key_stock_df$RV[(beg+k-1)]
+        current_date[[(k+1)]] <- key_stock_df$Date[(beg+k)]
+        past_date[[(k+1)]] <- key_stock_df$Date[(beg+k-1)]
       }
+    ##Now that we've built all of our variables as lists, we wish to assemble them into a dataframe,
+    ##We do so by using I(list) to consider it as a column, and then unlist so that the datatype is not a list itself
+    independent_variables <-  
+      data.frame('month_RV' = unlist(I(RV_m)), 'week_RV' = unlist(I(RV_w)), 'previous_RV' = unlist(I(RV_t)), 'current_date' = unlist(I(current_date)), 'past_date' = unlist(I(past_date)))
+    
+    
+    independent_variables$current_date <- as.Date(independent_variables$current_date, origin = '1970-01-01') ##R likes to convert dates to int (nb of days since 1970-01-01), this converts it back
+    
+    
+    independent_variables$past_date <- as.Date(independent_variables$past_date, origin = '1970-01-01')                
+    independent_variables <- inner_join(independent_variables, wide_other_stock_df, by = c('past_date' = 'Date' )) ## Now, we want to join this with the RV_{t-1} of all other stocks
+    ##Finally, I want to join this with the dependent variable which we separated in key_window.
+    full_data <- key_window %>% select(Date, VOL, chosen_variable) %>% inner_join(df3, by = c('Date' = 'current_date'))
+    y_var <- data.matrix(full_data$RV) ##GLMNET only works with data matrix, so we need to convert it and separate the variables.
+    x_var <- data.matrix(full_data[,!names(df4) %in% c('Date', 'VOL', 'RV', 'past_date', 'V')]) ##Here, I HAD to remove V, because it's NAN before 2008.
+    ##If I remove it as planned from my dataset, it won't be a problem anymore.
+    # Setting the range of lambda values
+    lambda_seq <- 10^seq(2, -2, by = -.1)
+    # Using glmnet function to build the ridge regression in r
+    fit <- glmnet(x_var, y_var, alpha = 0, lambda  = lambda_seq)
+    # Checking the model
+    summary(fit) ##THIS WORKS!
   }
   
   
