@@ -1,5 +1,5 @@
 ###This should be the R script where we save our functions, because this makes it all much tidier.
-RidgeRegression <- function()
+
 RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month = 22, df, model_type = 'level'){
   ##The key_stock argument defines the stock over which we want to model. It defaults to SPY since it is the ETF.
   
@@ -65,17 +65,29 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     independent_variables$past_date <- as.Date(independent_variables$past_date, origin = '1970-01-01')                
     independent_variables <- inner_join(independent_variables, wide_other_stock_df, by = c('past_date' = 'Date' )) ## Now, we want to join this with the RV_{t-1} of all other stocks
     ##Finally, I want to join this with the dependent variable which we separated in key_window.
-    full_data <- key_window %>% select(Date, VOL, chosen_variable) %>% inner_join(df3, by = c('Date' = 'current_date'))
-    y_var <- data.matrix(full_data$RV) ##GLMNET only works with data matrix, so we need to convert it and separate the variables.
-    x_var <- data.matrix(full_data[,!names(df4) %in% c('Date', 'VOL', 'RV', 'past_date', 'V')]) ##Here, I HAD to remove V, because it's NAN before 2008.
+    full_data <- key_window %>% select(Date, VOL, chosen_variable) %>% inner_join(independent_variables, by = c('Date' = 'current_date'))
+    y_var <- data.matrix(scale(full_data$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
+    x_var <- data.matrix(scale(full_data[,!names(full_data) %in% c('Date', 'VOL', 'RV', 'past_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
+    
     ##If I remove it as planned from my dataset, it won't be a problem anymore.
     # Setting the range of lambda values
-    lambda_seq <- 10^seq(2, -2, by = -.1)
+    
     # Using glmnet function to build the ridge regression in r
-    fit <- glmnet(x_var, y_var, alpha = 0, lambda  = lambda_seq)
+    fit <- tidy(glmnet(x_var, y_var, alpha = 0, lambda  = lambda_seq)) ##This creates a data frame for the current model!
+    lambda_sequence <- 10^seq(4, -4, by = -.01) ##Create a lambda sequence to test
+    ##Now, we can use HD Econometrics to do the optimizations for ridge
+    ridge <- ic.glmnet(x_var, y_var, crit = 'bic', alpha = 0, lambda = lambda_sequence) ##This estimates the best lambda via BIC and spits out the model.
+    
+    
+    
+    # Plot information criteria against tried values of lambdas
+    ggplot(log(lambda_sequence), aic, col = "orange", type = "l",
+         ylim = c(190, 260), ylab = "Information Criterion") + 
+    geom_line(aes(log(lambda_sequence)), bic, col = "skyblue3")
+    legend("bottomright", lwd = 1, col = c("orange", "skyblue3"), legend = c("AIC", "BIC"))
     # Checking the model
-    summary(fit) ##THIS WORKS!
-  }
+    break
+ return(i) }
   
   
   
