@@ -27,7 +27,7 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
   ##So I always start in 
   ##Say my window is of size 3. Then I would get observations 22, 23, 24.
   ##The end of my interval will be at window_Size -1  + i + month -1 => 2 + 22 = 24
- 
+  i <- 1
   
   for(i in 1:days){ ##This cannot go on until days, this needs to stop at the last possible window. ##days - window_size +1 maybe
     
@@ -66,6 +66,8 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     independent_variables <- inner_join(independent_variables, wide_other_stock_df, by = c('past_date' = 'Date' )) ## Now, we want to join this with the RV_{t-1} of all other stocks
     ##Finally, I want to join this with the dependent variable which we separated in key_window.
     full_data <- key_window %>% select(Date, VOL, chosen_variable) %>% inner_join(independent_variables, by = c('Date' = 'current_date'))
+    
+    
     y_var <- data.matrix(scale(full_data$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
     x_var <- data.matrix(scale(full_data[,!names(full_data) %in% c('Date', 'VOL', 'RV', 'past_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
     
@@ -73,20 +75,29 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     # Setting the range of lambda values
     
     # Using glmnet function to build the ridge regression in r
-    fit <- tidy(glmnet(x_var, y_var, alpha = 0, lambda  = lambda_seq)) ##This creates a data frame for the current model!
+   
     lambda_sequence <- 10^seq(4, -4, by = -.01) ##Create a lambda sequence to test
-    ##Now, we can use HD Econometrics to do the optimizations for ridge
-    ridge <- ic.glmnet(x_var, y_var, crit = 'bic', alpha = 0, lambda = lambda_sequence) ##This estimates the best lambda via BIC and spits out the model.
+  
+    aic <- c()
+    bic <- c()
+    for (lambda in 1:length(lambda_sequence)){
+      model <- glmnet(x_var, y_var, alpha = 0, lambda = lambda_sequence[lambda])
+      betas <- as.vector((as.matrix(coef(model))[-1, ]))
+      resid <- y_var - (x_var %*% betas)
+      # Compute hat-matrix and degrees of freedom
+      ld <- lambda_sequence[lambda] * diag(ncol(x_var))
+      H <- x_var %*% solve(t(x_var) %*% x_var + ld) %*% t(x_var)
+      df <- tr(H)
+      # Compute information criteria
+      aic[lambda] <- nrow(x_var) * log(t(resid) %*% resid) + 2 * df
+      bic[lambda] <- nrow(x_var) * log(t(resid) %*% resid) + 2 * df * log(nrow(x_var))
+    }
+    
+    lambda_bic <- lambda_sequence[which.min(bic)] #Chooses the best lambda for BIC criteria.
+    ridge <-  tidy(glmnet(x_var, y_var, alpha = 0, lambda = lambda_bic)) ##Creates DF for Ridge with optimal Lambda
     
     
-    
-    # Plot information criteria against tried values of lambdas
-    ggplot(log(lambda_sequence), aic, col = "orange", type = "l",
-         ylim = c(190, 260), ylab = "Information Criterion") + 
-    geom_line(aes(log(lambda_sequence)), bic, col = "skyblue3")
-    legend("bottomright", lwd = 1, col = c("orange", "skyblue3"), legend = c("AIC", "BIC"))
-    # Checking the model
-    break
+   
  return(i) }
   
   
