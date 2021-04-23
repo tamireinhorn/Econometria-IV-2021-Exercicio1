@@ -27,10 +27,10 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
   ##So I always start in 
   ##Say my window is of size 3. Then I would get observations 22, 23, 24.
   ##The end of my interval will be at window_Size -1  + i + month -1 => 2 + 22 = 24
-  i <- 300
+  
   ridge_df <- data.frame(matrix(NA, nrow = days-window_size+1, ncol = 32))#THIS SHOULD BE NUMBER OF WINDOWS TODO
   lambda_list <- vector(mode = 'list', length = days-window_size+1)
-  
+
   for(i in 1:(days-window_size+1)){ ##This cannot go on until days, this needs to stop at the last possible window. ##days - window_size +1 maybe
     
     beg <- i + (month - 1) ##Just to clear notation, I wanted to create this variable for the interval's beginning.
@@ -44,6 +44,7 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     ##For week, we start at i+beg (22) and we need to go until 18, which means (i+beg) - (week - 1) = 
     RV_m <- vector(mode = 'list', length = window_size)
     RV_w <- vector(mode = 'list', length = window_size)
+    
     RV_t <- vector(mode = 'list', length = window_size)
     current_date <- vector(mode = 'list', length = window_size)
     future_date <- vector(mode = 'list', length = window_size)
@@ -59,7 +60,7 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     ##Now that we've built all of our variables as lists, we wish to assemble them into a dataframe,
     ##We do so by using I(list) to consider it as a column, and then unlist so that the datatype is not a list itself
     independent_variables <-  
-      data.frame('month_RV' = unlist(I(RV_m)), 'week_RV' = unlist(I(RV_w)), 'previous_RV' = unlist(I(RV_t)), 'current_date' = unlist(I(current_date)), 'future_date' = unlist(I(past_date)))
+      data.frame('month_RV' = unlist(I(RV_m)), 'week_RV' = unlist(I(RV_w)), 'previous_RV' = unlist(I(RV_t)), 'current_date' = unlist(I(current_date)), 'future_date' = unlist(I(future_date)))
     
     
     independent_variables$current_date <- as.Date(independent_variables$current_date, origin = '1970-01-01') ##R likes to convert dates to int (nb of days since 1970-01-01), this converts it back
@@ -71,6 +72,7 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     full_data <- key_window %>% select(Date, VOL, chosen_variable) %>% inner_join(independent_variables, by = c('Date' = 'future_date'))
     
    
+    
     y_var <- data.matrix(scale(full_data$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
     x_var <- data.matrix(scale(full_data[,!names(full_data) %in% c('Date', 'VOL', 'RV', 'current_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
     names(ridge_df) <- names(x_var)
@@ -84,6 +86,7 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
     aic <- c()
     bic <- c()
     for (lambda in 1:length(lambda_sequence)){
+     
       model <- glmnet(x_var, y_var, alpha = 0, lambda = lambda_sequence[lambda])
       betas <- as.vector((as.matrix(coef(model))[-1, ]))
       resid <- y_var - (x_var %*% betas)
@@ -108,10 +111,10 @@ RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month
   
   
   
+testeHd <- ic.glmnet(x_var, y_var, crit = 'bic', alpha = 0, lambda = lambda_sequence)  
+
   
-  
-  
-  
+  lambda_list[i]
   
   
   
