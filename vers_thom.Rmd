@@ -30,7 +30,13 @@ library(glmnet)
 library(maditr)
 library(broom)
 library(psych)
-
+library(devtools)
+install_github('gogonzo/runner')
+library(runner)
+library(profvis)
+library(foreach)
+library(doParallel)
+registerDoParallel(numCores)
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
 
 ```

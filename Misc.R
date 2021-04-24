@@ -65,7 +65,7 @@ return(full_data)}
 
 ##TODO Augment this function to make it work on ALL possible models. 
 BICModels <- function(x,y){
-  ridge <- glmnet(x, y, alpha = 0) ##This makes a ridge model with the function variables. 
+  profvis({ridge <- glmnet(x, y, alpha = 0) ##This makes a ridge model with the function variables. 
   lasso <- glmnet(x,y,alpha = 1) ##This creates a LASSO model with the function variables.
   #initializing the BIC vector
   BIC_ridge = rep(NA, length(ridge$lambda))
@@ -106,27 +106,22 @@ BICModels <- function(x,y){
     
     BIC_ridge[j] = log(sig2) + df_ridge * aux
     
-  } #end of information criteria for lasso
+  } #end of information criteria for ridge
+  ##Now for the Lasso
+  
   BIC_lasso = rep(NA, length(lasso$lambda))
   
-  #calculating information criteria for LASSO
-  for (j in 1:length(lasso$lambda)) { 
-    
-        yhat = cbind(1, x) %*% coef(lasso)[,j]
-    
-    #resid is a vector composed of 1000 elements, each one the residual for each observation in the window
-        resid = (y- yhat)
-        df_lasso = lasso$df[j]
-    #for sig2, we sum the square of each element of resid. Thus, do resid^d and sum its elements
-        sig2 = sum(resid^2) / (window_size - df_lasso)
-        
-    BIC_lasso[j] = log(sig2) + df_lasso * aux
-    
-  } #end of information criteria for lasso
+  yhat = cbind(1,x) %*% coef(lasso)
+  resid = y - yhat
+  resid2 = resid ^2
+  sig2 = colSums(resid2)/ (window_size - lasso$df)
+  BIC_lasso = log(sig2) + lasso$df * aux
+ 
   
   ##After completing the calculation of the BIC criteria for every possible lambda in glmnet, all we have to do is get the optimal:
   lambda_ridge = ridge$lambda[which.min(BIC_ridge)]
   lambda_lasso = lasso$lambda[which.min(BIC_lasso)]
+  
   final_ridge <- glmnet(x,y, lambda = lambda_ridge, alpha = 0)
   final_lasso <- glmnet(x,y, lambda = lambda_lasso, alpha = 1)
   ##Now, the AdaLasso
@@ -134,26 +129,18 @@ BICModels <- function(x,y){
   first_step_coef <- coef(final_ridge)[-1] # Since p < T, we use Ridge as the first step model and exclude the intercept.
   penalty_factor <- abs(first_step_coef)**-tau
   adalasso <- glmnet(x,y, penalty.factor = penalty_factor)
-  
-  BIC_adalasso = rep(NA, length(adalasso$lambda))
-  
   #calculating information criteria for adaLASSO
-  for (j in 1:length(adalasso$lambda)) { 
-    
-    yhat = cbind(1, x) %*% coef(adalasso)[,j]
-    
-    #resid is a vector composed of 1000 elements, each one the residual for each observation in the window
-    resid = (y- yhat)
-    df_adalasso = adalasso$df[j]
-    #for sig2, we sum the square of each element of resid. Thus, do resid^d and sum its elements
-    sig2 = sum(resid^2) / (window_size - df_adalasso)
-    
-    BIC_adalasso[j] = log(sig2) + df_adalasso * aux
-    
-  } #end of information criteria for adalasso
+  BIC_adalasso = rep(NA, length(adalasso$lambda))
+  yhat = cbind(1, x) %*% coef(adalasso)
+  resid = y - yhat
+  resid2 = resid ^2
+  sig2 = colSums(resid2)/ (window_size - adalasso$df)
+  BIC_adalasso = log(sig2) + adalasso$df * aux
+  
+  
   lambda_adalasso = adalasso$lambda[which.min(BIC_adalasso)]
   final_adalasso <- glmnet(x,y, lambda = lambda_adalasso, alpha = 1, penalty.factor = penalty_factor)
-  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso)
+  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso)})
 return(return_list)}
 
 RollingWindow <- function(df, window_size = 1000, month = 22){
@@ -175,7 +162,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   #This means we will have 4287-1000+1=3288 windows. The first one goes from 1 to 1000,the last one from 3288 to 4287
   
   #An external loop will define a window starting at i, and through it we will select, in x_var and y_var, observations [i:i+ window_size - 1], and used it as a glmnet() argument
-  days <- dim(key_stock_df)[[1]] ##This will give us the length of our dataset
+  days <- dim(y_var)[[1]] ##This will give us the length of our dataset
   num_windows <- days - (month - 1)  - window_size 
   
   #initializing the objects
@@ -191,6 +178,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   i <- 1
   for (i in 1:num_windows){
     #i = 1 #test
+    profvis({
     models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)])
     ridge = models$ridge
     lasso = models$lasso
@@ -209,7 +197,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     forecast_lasso[i] = predict(lasso, newx =  new_x)
     forecast_lasso[i] = predict(adalasso, newx =  new_x)
     #f_ridge[i] <- predict(ridge, newx = as.matrix(new_x))
-  }
+  })
  return(2) }
   
   
