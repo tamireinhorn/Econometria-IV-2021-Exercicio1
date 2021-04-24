@@ -211,15 +211,26 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   lambda_lasso <- rep(NA, num_windows)
   lambda_adalasso <- rep(NA, num_windows)
   lambda_elastic_net <-  rep(NA, num_windows)
+  lambda_ada_elastic_net <- rep(NA, num_windows)
+  ##Forecasts:
   forecast_ridge <- rep(NA, num_windows)
   forecast_lasso <- rep(NA, num_windows)
   forecast_adalasso <- rep(NA, num_windows)
   forecast_elastic_net <-  rep(NA, num_windows)
+  forecast_ada_elastic_net <- rep(NA, num_windows)
+  ##MSE
+  MSE_ridge <-  rep(NA, num_windows)
+  MSE_lasso <-  rep(NA, num_windows)
+  MSE_adalasso <-  rep(NA, num_windows)
+  MSE_elastic_net <-  rep(NA, num_windows)
+  MSE_ada_elastic_net <-  rep(NA, num_windows)
+  ##Beta matrices
   betas_ridge <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_lasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_adalasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
-  i <- 1
+  betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
+  
   for (i in 1:num_windows){
     #i = 1 #test
   
@@ -228,24 +239,34 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     lasso = models$lasso
     adalasso = models$adalasso
     elastic_net = models$elastic_net
+    ada_elastic_net = models$ada_elastic_net
     #optimal lambda for each window
     lambda_ridge[i] = ridge$lambda
     lambda_lasso[i] = lasso$lambda
     lambda_adalasso[i] = adalasso$lambda
     lambda_elastic_net[i] = elastic_net$lambda
-    
+    lambda_ada_elastic_net[i] = ada_elastic_net$lambda
     z <- as.list(ridge$beta[,])
     betas_ridge[,i] = unlist(z)
     
     betas_lasso[,i] = unlist(as.list(lasso$beta[,]))
     betas_adalasso[,i] = unlist(as.list(adalasso$beta[,]))
     betas_elastic_net[,i] = unlist(as.list(elastic_net$beta[,]))
+    betas_ada_elastic_net[,i] = unlist(as.list(ada_elastic_net$beta[,]))
     #predicting
     new_x = as.matrix(t(x_var[(window_size + i),])) ##Now, we get one step ahead values of x, make them into a matrix and use it for prediction!
+    new_y = y_var[(window_size + i)]
     forecast_ridge[i] = predict(ridge, newx = new_x)
     forecast_lasso[i] = predict(lasso, newx =  new_x)
-    forecast_lasso[i] = predict(adalasso, newx =  new_x)
+    forecast_adalasso[i] = predict(adalasso, newx =  new_x)
     forecast_elastic_net[i] = predict(elastic_net, newx =  new_x)
+    forecast_ada_elastic_net[i] = predict(ada_elastic_net, newx =  new_x)
+    
+    MSE_ridge[i] = (new_y - forecast_ridge[i])^2
+    MSE_lasso[i] = (new_y - forecast_lasso[i])^2
+    MSE_adalasso[i] = (new_y - forecast_adalasso[i])^2
+    MSE_elastic_net[i] = (new_y - forecast_elastic_net[i])^2
+    MSE_ada_elastic_net[i] = (new_y - forecast_ada_elastic_net[i])^2
     #f_ridge[i] <- predict(ridge, newx = as.matrix(new_x))
   }
  return(2) }
