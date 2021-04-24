@@ -135,8 +135,7 @@ RollingWindow <- function(df, window_size = 1000){
   #This means we will have 4287-1000+1=3288 windows. The first one goes from 1 to 1000,the last one from 3288 to 4287
   
   #An external loop will define a window starting at i, and through it we will select, in x_var and y_var, observations [i:i+ window_size - 1], and used it as a glmnet() argument
-  
-  window_size <- 1000
+  days <- dim(key_stock_df)[[1]] ##This will give us the length of our dataset
   num_windows <- days - 21 - 1 - window_size +1
   
   #initializing the objects
@@ -146,47 +145,15 @@ RollingWindow <- function(df, window_size = 1000){
   i <- 1
   for (i in 1:num_windows){
     #i = 1 #test
-    ridge = glmnet(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)], alpha = 0)
-    
-    x_sc = x_var[i:(window_size+i-1),]
-    
-    #initializing the BIC vector
-    BIC = rep(NA, length(ridge$lambda))
-   
-    
-    #calculating information criteria
-    for (j in 1:length(ridge$lambda)) { 
-      
-      #degrees of freedom
-      lambda_diag = ridge$lambda[j] * diag(ncol(x_sc)) ##This is Lambda * Identity
-      xx = t(x_sc) %*% x_sc  #transpose of x multiplied (in the matrix sense) by x
-      df = sum(diag(x_sc %*% solve(xx + lambda_diag) %*% t(x_sc))) + 1 #+1 due to the the intercept! 
-      
-      #In slide 6 of lecture 2, part 3, we have that df = tr(x(x'*x+lambda*i)^(-1)*x')
-      #the term (x'*x+lambda*i)^(-1) is obtained by inverting (x'*x+lambda*i), hence we use solve()
-      #why +1?
-      
-      #sigma^2(lambda)
-     
-      #for yhat, we take into account also the intercept, and for this, we add to X a column of constant 1, which when multiplied by coef(ridge[intercept]), will yield the correct value
-      yhat = cbind(1, x_var[i:(window_size+i-1),]) %*% coef(ridge)[,j]
-      
-      #resid is a vector composed of 1000 elements, each one the residual for each observation in the window
-      resid = (y_var[(i):(window_size+i-1)] - yhat)
-      
-      #for sig2, we sum the square of each element of resid. Thus, do resid^d and sum its elements
-      sig2 = sum(resid^2) / (window_size - df)
-      
-      BIC[j] = log(sig2) + df * (log(window_size)/window_size)
-      
-    } #end of information criteria
-    
+    ridge = RidgeRegressionBIC(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)])
+  
     #optimal lambda for each window
-    lambda_ridge[i] = ridge$lambda[which.min(BIC)]
-    betas_ridge[,i] = ridge$beta[,which.min(BIC)]
+    lambda_ridge[i] = ridge$lambda
+    z <- as.list(ridge$beta[,])
+    betas_ridge[,i] = unlist(z)
     
     #predicting
-    #new_x = model_vars %>% slice(window + i) %>% select(-Date, -SPY_plus1) %>% data.matrix()
+     new_x = x_var %>% slice(window_size + i) 
     
     #f_ridge[i] <- predict(ridge, newx = new_x, s = lambda_ridge[i])
     
