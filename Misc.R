@@ -1,5 +1,30 @@
 ###This should be the R script where we save our functions, because this makes it all much tidier.
 
+VariableCreation <- function(key_stock = 'SPY', window_size = 1000, week = 5, month = 22, df, model_type = 'level'){
+  ##The key_stock argument defines the stock over which we want to model. It defaults to SPY since it is the ETF.
+  
+  ##The window_size is the size of our rolling window, which is defaulted to be 1000 as defined by the assignment.
+  
+  ##The week and month arguments are just for specifying the RV_m, RV_w part of the calculation, should we want to change them as well.
+  
+  ##model_type will give us if the model is to be a log or level model and therefore which variable to choose later:
+  chosen_variable <- ifelse(model_type == 'level', 'RV', 'log_RV')
+  
+  other_stock_df <- df %>% filter(Stock != key_stock) ##This will create a dataframe with all other stocks other than our dependent variable!
+  
+  
+  
+  wide_other_stock_df <- other_stock_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = chosen_variable)  ##This other_stock df needs to be wide!
+  
+  
+  key_stock_df <- df %>% filter(Stock == key_stock) ##This, in turn, creates a df with ONLY the stock we want.
+  
+  days <- dim(key_stock_df)[[1]] ##This will give us the length of our dataset
+  day_list <- sort(unique(key_stock_df$Date))
+  length_rw <- days - (month - 1) - 1 
+}
+
+
 RollingWindow <- function(key_stock = 'SPY', window_size = 1000, week = 5, month = 22, df, model_type = 'level'){
   ##The key_stock argument defines the stock over which we want to model. It defaults to SPY since it is the ETF.
   
