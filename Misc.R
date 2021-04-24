@@ -65,7 +65,7 @@ return(full_data)}
 
 ##TODO Augment this function to make it work on ALL possible models. 
 BICModels <- function(x,y){
-  profvis({ridge <- glmnet(x, y, alpha = 0) ##This makes a ridge model with the function variables. 
+  ridge <- glmnet(x, y, alpha = 0) ##This makes a ridge model with the function variables. 
   lasso <- glmnet(x,y,alpha = 1) ##This creates a LASSO model with the function variables.
   #initializing the BIC vector
   BIC_ridge = rep(NA, length(ridge$lambda))
@@ -78,36 +78,46 @@ BICModels <- function(x,y){
   identity_matrix <- diag(ncol(x)) ##This creates the identity matrix I.
   aux <-(log(window_size)/window_size)
   
-  #calculating information criteria for ridge
+  #calculating information criteria for ridge DISABLE 
  
-  for (j in 1:length(ridge$lambda)) { 
-    
-    #degrees of freedom
-    lambda_diag = ridge$lambda[j] * identity_matrix ##This is Lambda * Identity
-    
-    
-    
-    df_ridge = sum(diag(x %*% solve(x_squared + lambda_diag) %*% t(x))) + 1 #+1 due to the the intercept! 
-    ##This completes the degrees of freedom calculation!
-    #In slide 6 of lecture 2, part 3, we have that df = tr(x(x'*x+lambda*i)^(-1)*x')
-    #the term (x'*x+lambda*i)^(-1) is obtained by inverting (x'*x+lambda*i), hence we use solve()
-    
-    
-    #sigma^2(lambda)
-    
-    #for yhat, we take into account also the intercept, and for this, we add to X a column of constant 1, which when multiplied by coef(ridge[intercept]), will yield the correct value
-    yhat = cbind(1, x) %*% coef(ridge)[,j]
-    
-    #resid is a vector composed of 1000 elements, each one the residual for each observation in the window
-    resid = (y- yhat)
-    
-    #for sig2, we sum the square of each element of resid. Thus, do resid^d and sum its elements
-    sig2 = sum(resid^2) / (window_size - df_ridge)
-    
-    BIC_ridge[j] = log(sig2) + df_ridge * aux
-    
-  } #end of information criteria for ridge
-  ##Now for the Lasso
+  #   foreach (j = 1:length(ridge$lambda)) %do% { 
+  #   
+  #   #degrees of freedom
+  #   lambda_diag = ridge$lambda[j] * identity_matrix ##This is Lambda * Identity
+  #   
+  #   
+  #   
+  #   df_ridge = sum(diag(x %*% solve(x_squared + lambda_diag) %*% t(x))) + 1 #+1 due to the the intercept! 
+  #   ##This completes the degrees of freedom calculation!
+  #   #In slide 6 of lecture 2, part 3, we have that df = tr(x(x'*x+lambda*i)^(-1)*x')
+  #   #the term (x'*x+lambda*i)^(-1) is obtained by inverting (x'*x+lambda*i), hence we use solve()
+  #   
+  #   
+  #   #sigma^2(lambda)
+  #   
+  #   #for yhat, we take into account also the intercept, and for this, we add to X a column of constant 1, which when multiplied by coef(ridge[intercept]), will yield the correct value
+  #   yhat = cbind(1, x) %*% coef(ridge)[,j]
+  #   
+  #   #resid is a vector composed of 1000 elements, each one the residual for each observation in the window
+  #   resid = (y- yhat)
+  #   
+  #   #for sig2, we sum the square of each element of resid. Thus, do resid^d and sum its elements
+  #   sig2 = sum(resid^2) / (window_size - df_ridge)
+  #   
+  #   BIC_ridge[j] = log(sig2) + df_ridge * aux
+  #   
+  #   log(sig2) + sum(diag(x %*% solve(x_squared + ridge$lambda[j] * identity_matrix) %*% t(x))) + 1 * aux
+  #   
+  # }
+  #end of information criteria for ridge
+  
+  #Simpler ridge:
+  yhat = cbind(1,x) %*% coef(ridge)
+  resid = y - yhat
+  resid2 = resid ^2
+  sig2 = colSums(resid2)/ (window_size - ridge$df)
+  BIC_ridge = log(sig2) + ridge$df * aux
+  #Now for the Lasso
   
   BIC_lasso = rep(NA, length(lasso$lambda))
   
@@ -140,7 +150,38 @@ BICModels <- function(x,y){
   
   lambda_adalasso = adalasso$lambda[which.min(BIC_adalasso)]
   final_adalasso <- glmnet(x,y, lambda = lambda_adalasso, alpha = 1, penalty.factor = penalty_factor)
-  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso)})
+  
+  ##Elastic Net
+  elastic_net <- glmnet(x,y, alpha = 0.5)
+  ##initializing the BIC vector for elastic net
+  BIC_elastic_net = rep(NA, length(elastic_net$lambda))
+  yhat = cbind(1, x) %*% coef(elastic_net)
+  resid = y - yhat
+  resid2 = resid ^2
+  sig2 = colSums(resid2)/ (window_size - elastic_net$df)
+  BIC_elastic_net = log(sig2) + elastic_net$df * aux
+  #calculating information criteria for elastic net
+  lambda_elastic_net = elastic_net$lambda[which.min(BIC_elastic_net)]
+  final_elastic_net <- glmnet(x,y, lambda = lambda_elastic_net, alpha = 0.5)
+  
+  
+  #Adaptative Elastic Net
+  tau <- 1 
+  first_step_coef <- coef(final_elastic_net)[-1] # Since p < T, we use Elastic Net as the first step model and exclude the intercept.
+  penalty_factor <- abs(first_step_coef)**-tau
+  ada_elastic_net <- glmnet(x,y, penalty.factor = penalty_factor)
+  #calculating information criteria for adaLASSO
+  BIC_ada_elastic_net = rep(NA, length(ada_elastic_net$lambda))
+  yhat = cbind(1, x) %*% coef(ada_elastic_net)
+  resid = y - yhat
+  resid2 = resid ^2
+  sig2 = colSums(resid2)/ (window_size - ada_elastic_net$df)
+  BIC_ada_elastic_net = log(sig2) + ada_elastic_net$df * aux
+  lambda_ada_elastic_net = ada_elastic_net$lambda[which.min(BIC_ada_elastic_net)]
+  final_ada_elastic_net <- glmnet(x,y,lambda = lambda_ada_elastic_net, alpha = 0.5, penalty.factor = penalty_factor)
+  
+  
+  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso, 'elastic_net' = final_elastic_net, 'ada_elastic_net' = final_ada_elastic_net)
 return(return_list)}
 
 RollingWindow <- function(df, window_size = 1000, month = 22){
@@ -169,35 +210,44 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   lambda_ridge <- rep(NA, num_windows)
   lambda_lasso <- rep(NA, num_windows)
   lambda_adalasso <- rep(NA, num_windows)
+  lambda_elastic_net <-  rep(NA, num_windows)
   forecast_ridge <- rep(NA, num_windows)
   forecast_lasso <- rep(NA, num_windows)
   forecast_adalasso <- rep(NA, num_windows)
+  forecast_elastic_net <-  rep(NA, num_windows)
   betas_ridge <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_lasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_adalasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
+  betas_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   i <- 1
   for (i in 1:num_windows){
     #i = 1 #test
-    profvis({
+  
     models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)])
     ridge = models$ridge
     lasso = models$lasso
     adalasso = models$adalasso
+    elastic_net = models$elastic_net
     #optimal lambda for each window
     lambda_ridge[i] = ridge$lambda
-    z <- as.list(ridge$beta[,])
-    betas_ridge[,i] = unlist(z)
     lambda_lasso[i] = lasso$lambda
     lambda_adalasso[i] = adalasso$lambda
+    lambda_elastic_net[i] = elastic_net$lambda
+    
+    z <- as.list(ridge$beta[,])
+    betas_ridge[,i] = unlist(z)
+    
     betas_lasso[,i] = unlist(as.list(lasso$beta[,]))
     betas_adalasso[,i] = unlist(as.list(adalasso$beta[,]))
+    betas_elastic_net[,i] = unlist(as.list(elastic_net$beta[,]))
     #predicting
     new_x = as.matrix(t(x_var[(window_size + i),])) ##Now, we get one step ahead values of x, make them into a matrix and use it for prediction!
     forecast_ridge[i] = predict(ridge, newx = new_x)
     forecast_lasso[i] = predict(lasso, newx =  new_x)
     forecast_lasso[i] = predict(adalasso, newx =  new_x)
+    forecast_elastic_net[i] = predict(elastic_net, newx =  new_x)
     #f_ridge[i] <- predict(ridge, newx = as.matrix(new_x))
-  })
+  }
  return(2) }
   
   
