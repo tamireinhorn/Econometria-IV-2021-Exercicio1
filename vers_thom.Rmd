@@ -31,7 +31,6 @@ library(maditr)
 library(broom)
 library(psych)
 
-#library(HDeconometrics)
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
 
 ```
@@ -276,129 +275,10 @@ Below, we will first conduct a rolling window estimation for RV of company AXP a
 
 ```{r}
 
-df <- complete_daily_df %>% filter(Stock == 'AXP')
-
-
-##Rolling Window of size N
-N <- 1000 #This is the size of our rolling window
-days <- dim(df)[[1]] ##This is the complete size of our sample!
-i = 1
-lambda_seq <- 10^seq(2, -2, by = -.1) ##I need to create a sequence of possible lambdas, just to use.
-##Later, this will be the hyperparameter tuning we will decide!
- ##First, how do I estimate a ridge regression with all the data?
-## GLMNET only works with matrices. Therefore, we need to convert the data, separating it between dependent and independent:
-
-
-## The dependent variable is RV of all other stocks other than SPY. Should we keep V out as well?
-
-
-##I need to be in observation 22 so that I have the past 21 observations for RV_{m,t}
-##My rolling window will be of size 10. ##So i need to have
-##22 to 31, ##23 to 32, etc
-##My intervals are then i + 21 to N + 21 + i -1!
-N <- 3
-i <- 1
-print(i+21)
-##18 = (22) - x 
-##18 - 22 = -x
-## x= 6
-##18 = (21 + i) -6
-print(N+21+i-1)
-print(21 + i -4)
-small_df <- df[(i+21):(N+i+21-1),]  
-##For RV_m, i need 22 observations, from 22 to 1
-##This puts me at i + 21, the first element of the interval
-##To i.
-##But this could be read as i + 21 (i = 1, 22) to (i+ 21) - (22, intervalsize- 1)) 
-#RV_W is 5, so i+21 (i=1, 22) to 18, right?
-#to (i+ 21) - (5) -1 => 22 - 4 = 18 
-RV_m <- 1/22 *sum((df$RV[(i+21):i]))
-RV_w <- 1/5 * sum(df$RV[(i+21):(i+21-4)])
-RV_t <- df$RV[(i+21)-1]
-##I also need to get all stocks but SPY in a single line
-x_df <- complete_daily_df %>% filter(Stock != 'SPY')
-##Now, I want to make this WIDE
-x_long <- x_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
-RV_wide <-  x_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = 'RV')
-logRV_wide <-  x_df %>% select(Stock, Date, log_RV) %>% dcast(Date ~ Stock, value.var = 'log_RV')
-RV_wide$RV_m <- RV_m
-days <-  dim(key_stock_df)[[1]] ##This will give us the length of our 
-month <- 22
-week <- 5
-key_stock_df <- complete_daily_df
-window_size <- 3
-
-day_list <- sort(unique(key_stock_df$Date)) 
-key_stock <- 'SPY'
-chosen_variable <- 'RV'
-df <- complete_daily_df
-other_stock_df <- df %>% filter(Stock != key_stock) ##This will create a dataframe with all other stocks other than our dependent variable!
-  
- 
-  
-  
-
-wide_other_stock_df <- other_stock_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = chosen_variable)  ##This other_stock df needs to be wide!
-  
-window_size <- 4
-  key_stock_df <- df %>% filter(Stock == key_stock) ##This, in turn, creates a df with ONLY the stock we want.
-month <- 22
-week <- 5
-for(i in 20:45){ ##This cannot go on until days, this needs to stop at the last possible window. ##days - window_size +1 maybe
-    
-    beg <- i + (month - 1) ##Just to clear notation, I wanted to create this variable for the interval's beginning.
-    key_window <- key_stock_df[(beg):(window_size - 1 + beg),]  ##This creates the data subset we wish to use ##TODO: should this use the COMPLETE df or the separate?
-    other_window <- wide_other_stock_df [(beg):(window_size - 1 +beg ),]
-    
-    ##However, this does not seal the deal. Once inside this window, we need to construct the variables. This requires us to loop again?
-    ##If our window_size is indeed 3, and we have observations 22, 23, 24, we need to build RV_m for all these
-    ##RV_{m, 22} is 1/22 * sum(RV of 22 to 1), RV_{m,23} is 1/22 * sum(RV of 23 to 2), etc. 
-    ##So RV_{m,i} needs to go from i+month-1 to i, then from i+month-1+1 to i+1, etc. 
-    ##For week, we start at i+beg (22) and we need to go until 18, which means (i+beg) - (week - 1) = 
-    RV_m <- vector(mode = 'list', length = window_size)
-    RV_w <- vector(mode = 'list', length = window_size)
-    RV_t <- vector(mode = 'list', length = window_size)
-    current_date <- vector(mode = 'list', length = window_size)
-    past_date <- vector(mode = 'list', length = window_size)
-   
-      for(k in 0:(window_size-1)){
-       
-        RV_m[[(k+1)]] <- (1/month) * sum(( key_stock_df$RV[(beg+k):(i+k)]))
-       ## print( key_stock_df$RV[(beg+k):(i+k)])
-        RV_w[[(k+1)]]<- (1/week) * sum(( key_stock_df$RV[(beg+k):(beg+k - (week-1))]))
-        RV_t[[(k+1)]] <- key_stock_df$RV[(beg+k-1)]
-        current_date[[(k+1)]] <- as.Date(key_stock_df$Date[(beg+k)])
-        past_date[[(k+1)]] <- as.Date(key_stock_df$Date[(beg+k-1)])
-      
-      }
-  
-  }
-df2 <-  
-  data.frame('month_RV' = unlist(I(RV_m)), 'week_RV' = unlist(I(RV_w)), 'previous_RV' = unlist(I(RV_t)), 'current_date' = unlist(I(current_date)), 'past_date' = unlist(I(past_date)))
-                                                                                                    
-                                                                                                    
-df2$current_date <- as.Date(df2$current_date, origin = '1970-01-01') 
-
-df2$past_date <- as.Date(df2$past_date, origin = '1970-01-01')                
-df3 <- inner_join(df2, wide_other_stock_df, by = c('past_date' = 'Date' ))
-df4 <- inner_join(df3, key_window, by = c('current_date' = 'Date'))
-chosen_variable = 'RV'
-df4 <- key_window %>% select(Date, VOL,chosen_variable) %>% inner_join(df3, by = c('Date' = 'current_date'))
-df5 <- data.matrix(df4)
-y_var <- data.matrix(df4$RV)
-x_var <- data.matrix(df4[,!names(df4) %in% c('Date', 'VOL', 'RV', 'past_date', 'V', 'daily')])
-# Setting the range of lambda values
-lambda_seq <- 10^seq(2, -2, by = -.1)
-# Using glmnet function to build the ridge regression in r
-fit <- tidy(glmnet(x_var, y_var, alpha = 0, lambda  = lambda_seq))
-# Checking the model
-f <- tidy(fit)
-for(l in lambdas_seq){
-  print(lambdas_seq[[l]])
-}
 ```
 Vamos prum código mais limpo pelo amor de deus:
 ```{r}
 full_data <- VariableCreation(df = complete_daily_df)
+riiidge <- RidgeRegressionBIC(x, y)
 ```
 
