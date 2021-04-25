@@ -35,8 +35,7 @@ install_github('gogonzo/runner')
 library(runner)
 library(profvis)
 library(foreach)
-library(doParallel)
-registerDoParallel(numCores)
+
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
 
 ```
@@ -280,6 +279,6 @@ autocorr_har <- complete_daily_df %>%
 Vamos prum código mais limpo pelo amor de deus:
 ```{r}
 full_data <- VariableCreation(df = complete_daily_df)
-riiidge <- RidgeRegressionBIC(x, y)
+
 ```
 
