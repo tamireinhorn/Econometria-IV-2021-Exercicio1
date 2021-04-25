@@ -280,7 +280,10 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   mean(MSE_ridge)/mean(MSE_HAR)
   mean(MSE_lasso)/mean(MSE_HAR)
   mean(MSE_adalasso)/mean(MSE_HAR)
-  mean(MSE_elastic_net)
+  mean(MSE_elastic_net)/ mean(MSE_HAR)
+  mean(MSE_ada_elastic_net) / mean(MSE_HAR)
+  
+  ##No model is better than the benchmark. GoddamN!
  return(2) }
   
   
