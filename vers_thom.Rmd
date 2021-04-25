@@ -29,7 +29,7 @@ library(ggpubr)
 library(glmnet)
 library(maditr)
 library(broom)
-library(psych)
+
 library(devtools)
 install_github('gogonzo/runner')
 library(runner)
@@ -277,11 +277,6 @@ autocorr_har <- complete_daily_df %>%
 
 **Rolling Window Estimations**
 
-Below, we will first conduct a rolling window estimation for RV of company AXP and try to generalize the method to the other companies via tidyverse and group_map() or group_modify()
-
-```{r}
-
-```
 Vamos prum código mais limpo pelo amor de deus:
 ```{r}
 full_data <- VariableCreation(df = complete_daily_df)
