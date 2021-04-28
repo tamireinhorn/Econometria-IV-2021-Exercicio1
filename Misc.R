@@ -80,7 +80,7 @@ BICModels <- function(x,y){
   
   #calculating information criteria for ridge DISABLE 
  
-  #   foreach (j = 1:length(ridge$lambda)) %do% { 
+     foreach (j = 1:length(ridge$lambda)) %do% { 
   #   
   #   #degrees of freedom
   #   lambda_diag = ridge$lambda[j] * identity_matrix ##This is Lambda * Identity
@@ -188,9 +188,9 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
 
   
   
-  y_var <- data.matrix(scale(df$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
+  y_var <- log(data.matrix(df$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
   
-  x_var <- data.matrix(scale(df[,!names(df) %in% c('Date', 'RV', 'current_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
+  x_var <- log(data.matrix(df[,!names(df) %in% c('Date', 'RV', 'current_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
   
   #From full data, we retrieve all rows, and ! indicates the names of columns in full_data that we ignore
   
@@ -232,7 +232,6 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   
   
-  ##Y vector for HAR
   for (i in 1:num_windows){
     #i = 1 #test
   
@@ -283,7 +282,15 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   mean(MSE_elastic_net)/ mean(MSE_HAR)
   mean(MSE_ada_elastic_net) / mean(MSE_HAR)
   
-  ##No model is better than the benchmark. GoddamN!
+  dm.test(MSE_HAR, MSE_ridge)
+  dm.test(MSE_HAR, MSE_lasso)
+  dm.test(MSE_HAR, MSE_elastic_net)
+  
+  dm.test(MSE_HAR, MSE_adalasso)
+  
+  dm.test(MSE_HAR, MSE_ada_elastic_net)
+  
+  
  return(2) }
   
   
