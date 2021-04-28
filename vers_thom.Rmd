@@ -29,16 +29,133 @@ library(ggpubr)
 library(glmnet)
 library(maditr)
 library(broom)
-library(psych)
+
 library(devtools)
 install_github('gogonzo/runner')
 library(runner)
 library(profvis)
 library(foreach)
-library(doParallel)
-registerDoParallel(numCores)
+library(forecast)
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
 
+```
+
+## **2. DATA PREPARATION**
+
+The function clean_data will be created to clean the files, and it will be applied in the second chunk of the code, in which we will import the files.
+
+```{r}
+clean_data <- function(ticker) {
+
+  ##In this function, we're going to first convert the Date column to date:
+ 
+     ticker$Date <- as.Date(ticker$Date, '%m/%d/%Y')
+  
+  ## Then, we want to restrict it from 2000 onwards
+
+     new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)
+
+     ##We need all days to contain the same number ofminutes, so we will use the left_join command first ensure that, and also to create NA for all MINUTES for which certain stocks do not have data.
+     
+     minute_list <- sort(unique(new_ticker$Time)) 
+     day_list <- sort(unique(new_ticker$Date))
+     minute_df <- data.frame('Time' = minute_list) ##A minute df is needed for the left_join() to be applied
+     day_df <- data.frame('Date' = day_list) ##A day df is needed for the left_join() to be applied
+     day_minute_df <- left_join(day_df, minute_df, character()) ##A df is created in which all 390 possible minutes were joined into each possible day
+     new_ticker <- left_join(day_minute_df, new_ticker, by = c('Time', 'Date')) ##Then we left join all the informations in the new ticker into the day_minute df, uniformising all dates for all stocks in number of minutes
+     new_ticker$minute_return <- (new_ticker$Close - lag(new_ticker$Close))/ new_ticker$Close ##Return taken on levels: p_t - p_{t-1} / p_{t-1}
+     new_ticker$minute_log_return <- log(new_ticker$Close) - log(lag(new_ticker$Close)) ##Log return: log(p_t) - log(p_{t-1})
+     
+  return(new_ticker)
+}
+```
+
+Given the clean_data() function above, we will now jointly import and clean the data (alternatively, we could have importer everything, then created the cleaning function and then have applied it, using three different chunks). 
+
+
+```{r}
+files_list <- list.files('Data')
+stock_name <- str_remove(files_list, ".txt")
+stock_list <- vector(mode = "list", length = 29) ##Initialize the stock list.
+for (i in 1:length(stock_list)) {
+  stock_df <- data.frame(read_csv(paste('Data/',files_list[i], sep = ""), col_types = cols())) 
+  clean_stock_df <- clean_data(stock_df)
+  stock_list[[i]] <- clean_stock_df[,]
+}
+
+names(stock_list) <- stock_name
+```
+
+A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:
+
+```{r}
+
+#First for AXP, to understand the logic
+#AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
+
+##This logic will be turned into a function that creates daily dataframes for all of the tickers
+
+make_daily_data <- function(clean_ticker){
+  daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
+  #return(daily_ticker)
+}
+```
+
+Now, we apply this function for all tickers, just like before.
+
+```{r}
+daily_stock_list <- vector(mode = 'list', length = 29) ##Initialize the daily stock list.
+
+for (i in 1:length(stock_list)) {
+
+  daily_stock_df <- make_daily_data(stock_list[[i]])
+  daily_stock_list[[i]] <- daily_stock_df[,]
+  
+}
+names(daily_stock_list) <- stock_name
+```
+
+As suggested, we should try creating one giant dataframe in order to use facet_wrap and plot everything at once.
+
+```{r}
+complete_daily_df <- bind_rows(daily_stock_list, .id = "column_label")
+##I just want the name to be Stock:
+names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
+```
+
+---
+title: "Exercise 1"
+output: html_notebook
+fig_width: 6 
+fig_height: 4 
+---
+
+## **1. LOADING PACKAGES**
+
+```{r}
+
+library(devtools)
+library(fBasics)
+library(glmnet)
+library(dreamerr)
+library(tidyverse)
+library(tidyr)
+library(HARModel)
+library(dplyr)
+library(tsibble)
+library(feasts)
+library(stringr)
+library(lubridate)
+library(anytime)
+library(ggplot2)
+library(ggthemes)
+library(knitr)
+library(kableExtra)
+library(DT)
+library(htmltools)
+library(reshape2) #to be used with tidyverse and gglopt2
+library(ggpubr)
+library(forecast)
 ```
 
 ## **2. DATA PREPARATION**
@@ -135,14 +252,28 @@ ggplot(complete_daily_df, aes(x = RV)) +
   theme_minimal()
 ```
 
+
+Time Series of SPY
+
+```{r}  
+time_series_spy <- complete_daily_df %>%  filter(Stock=="SPY")  
+
+plot <- ggplot(time_series_spy, aes(x = Date, y= 100*RV)) +
+  geom_line(size=1) +
+  labs(x = "", y = "", title = 'RV Time Series (in percentage terms, %)') +
+  theme_bw() + theme(legend.position = "none")
+
+  plot
+
+```
+
 **Histogram of log RV:**
 
 ```{r fig.height = 30, fig.width = 14}
 
-ggplot(complete_daily_df, aes(x = log_RV)) +
-  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
-  labs(title = "log(RV) Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
-  theme_minimal()
+ggplot((complete_daily_df), aes(x = log_RV)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + 
+  labs(title = "log(RV) Histograms", x = "", y = "")   +  facet_wrap(~ Stock, ncol = 3, scales="free") + theme_minimal()
 
 ```
 
@@ -186,31 +317,21 @@ We will use functions to obtain ACFs for both our data and for simulated AR proc
 
 ```{r fig.height = 40, fig.width = 14}
 
-RV_tsibble <- complete_daily_df %>% select(Stock, Date, RV) %>%  as_tsibble(key = 'Stock', index = 'Date', regular = FALSE)
-
-RV_tsibble %>% ACF(RV, lag_max = 200) %>% autoplot() + theme_bw() + labs(x = 'Lags', y = '')
-
-#estimating an AR(1) process for RV of stock AXP:
-#RV_AXP <- RV_tsibble %>% filter(Stock == "AXP")
-#RV_AXP_AR1 <- arima(RV_AXP$RV , order = c(1, 0, 0))
-
-#Via TidyVerse, we already generate the ACFs for both level and log RV
-
 autocorr_f <- function(df){
   
-  autocorr <- data.frame(matrix(data = seq(0,29,1), nrow = 30, ncol = 1))
-  names(autocorr) <- c("Lag")   #seq(0,29,1) indicate that there are 30 lags of estimated ACFs, for each Stock. The above function generates, thus, one dataframe listing ACFs, for each Stock.
+  autocorr <- data.frame(matrix(data = seq(0,21,1), nrow = 22, ncol = 1))
+  names(autocorr) <- c("Lag")   #seq(0,21,1) indicate that there are 21 lags of estimated ACFs, for each Stock. The above function generates, thus, one dataframe listing ACFs, for each Stock.
   
-  autocorr$autocorr_level = acf(df$RV, lag.max = 29, pl = F)[[1]] %>% as.numeric() 
-  autocorr$autocorr_log = acf(df$log_RV, lag.max = 29, pl = F)[[1]] %>% as.numeric()     #[[1]] selects the the values of the ACFs themselves, as the function acf() generates other objects that are not of interest
+  autocorr$autocorr_level = acf(df$RV, lag.max = 21, pl = F)[[1]] %>% as.numeric() 
+  autocorr$autocorr_log = acf(df$log_RV, lag.max = 21, pl = F)[[1]] %>% as.numeric()     #[[1]] selects the the values of the ACFs themselves, as the function acf() generates other objects that are not of interest
   
   #ACFs for AR Model
   
-  autocorr$autocorr_ar_level = ARMAacf(ar = arima(df$RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 29) %>% as.numeric()   
+  autocorr$autocorr_ar_level = ARMAacf(ar = arima(df$RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 21) %>% as.numeric()   
   
 #The ARMAacf simulates a model for coefficients we give as imput, and returns the ACFs. @coef[1] selects only the auto-regressive parameter, and not the intercept.
                                      
-  autocorr$autocorr_ar_log = ARMAacf(ar = arima(df$log_RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 29) %>% as.numeric()
+  autocorr$autocorr_ar_log = ARMAacf(ar = arima(df$log_RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 21) %>% as.numeric()
   
   return(autocorr)
      
@@ -222,12 +343,109 @@ autocorr <- complete_daily_df %>%
   group_by(Stock) %>% 
   group_modify(~ autocorr_f(.x))
 
+#write.csv(autocorr, "autocorr.csv",row.names = FALSE)
+```
 
-#Now let`s use tidyverse to plot the graphs of interest (for both RV and log RF, it would be interesting to plot bars of the observed ACFs alongside the theoretical ACFs of forecasted ARs)
+Plotting the ACF for our data in Levels and for the implied AR model in levels
+
+```{r}
+autocorr %>%
+  pivot_longer(-(Stock:Lag), names_to = "type",values_to ="data") %>%
+  #above we insert all variables which are not Stock and Lag into a unit column, called   "type", and the corresponding values in a column called "data"
+  
+  filter(type %in% c("autocorr_ar_level", "autocorr_level")) %>%
+  # "%in% is due to the fact that we are working with a vector" 
+  ggplot(aes(x = Lag, y = data, fill = type)) +
+    geom_col(position="dodge")+
+    #dodge puts columns side by side
+    facet_wrap(~ Stock) +
+    theme_bw() +
+    theme(legend.position="top") +
+    scale_fill_discrete(labels = c("Autocorrelation for RV in AR model", 
+                                   "Autocorrelation for RV in the data")) +
+    theme(legend.title = element_blank())
+```
+
+Plotting the ACF for our data in log and for the implied AR model in log
+
+```{r}
+
+autocorr %>%
+  pivot_longer(-(Stock:Lag), names_to = "type",values_to ="data") %>%
+  filter(type %in% c("autocorr_ar_log", "autocorr_log")) %>%
+  ggplot(aes(x = Lag, y = data, fill = type)) +
+    geom_col(position="dodge")+
+    facet_wrap(~ Stock) +
+    theme_bw() +
+    theme(legend.position="top") +
+    scale_fill_discrete(labels = c("Autocorrelation for Log(RV) in AR model", 
+                                   "Autocorrelation for log(RV) in the data")) +
+    theme(legend.title = element_blank())
+
+
+  wide_complete_daily_df <- complete_daily_df %>% select(Stock, Date, RV) %>% dcast(Date ~ Stock, value.var = "RV")  #This other_stock df needs to be wide!
+  
+  wide_complete_daily_df$Date[1001]
+  
+  dim(wide_complete_daily_df)
+
 
 ```
 
 Looking at the ACF for both RV and log(RV), it is easy to notice that the plots present an approximate linear decay, whereas theoretical autoregressive processes contain ACFs that decay exponentially. 
+
+**ACF for RV and log(RV), now with 100 lags**:
+
+```{r fig.height = 40, fig.width = 14}
+
+autocorr_f <- function(df){
+  
+  autocorr <- data.frame(matrix(data = seq(0,99,1), nrow = 100, ncol = 1))
+  names(autocorr) <- c("Lag") 
+  
+  autocorr$autocorr_level = acf(df$RV, lag.max = 99, pl = F)[[1]] %>% as.numeric() 
+  autocorr$autocorr_log = acf(df$log_RV, lag.max = 99, pl = F)[[1]] %>% as.numeric()  
+  #ACFs for AR Model
+  
+  autocorr$autocorr_ar_level = ARMAacf(ar = arima(df$RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 99) %>% as.numeric()   
+  
+#The ARMAacf simulates a model for coefficients we give as imput, and returns the ACFs. @coef[1] selects only the auto-regressive parameter, and not the intercept.
+                                     
+  autocorr$autocorr_ar_log = ARMAacf(ar = arima(df$log_RV, order = c(1, 0, 0))$coef[1], ma = 0, lag.max = 99) %>% as.numeric()
+  
+  return(autocorr)
+     
+}
+
+#the argument autocorr that is taken by the function created above is here defined as being complete_daily_df, which we group_by() and then apply the function
+
+autocorr <- complete_daily_df %>% 
+  group_by(Stock) %>% 
+  group_modify(~ autocorr_f(.x))
+
+write.csv(autocorr, "autocorr.csv",row.names = FALSE)
+```
+
+Plotting the ACF for our data in Levels and for the implied AR model in levels
+
+```{r}
+autocorr %>%
+  pivot_longer(-(Stock:Lag), names_to = "type",values_to ="data") %>%
+  #above we insert all variables which are not Stock and Lag into a unit column, called   "type", and the corresponding values in a column called "data"
+  
+  filter(type %in% c("autocorr_ar_level", "autocorr_level")) %>%
+  # "%in% is due to the fact that we are working with a vector" 
+  ggplot(aes(x = Lag, y = data, fill = type)) +
+    geom_col(position="dodge")+
+    #dodge puts columns side by side
+    facet_wrap(~ Stock) +
+    theme_bw() +
+    theme(legend.position="top") +
+    scale_fill_discrete(labels = c("Autocorrelation for RV in AR model", 
+                                   "Autocorrelation for RV in the data")) +
+    theme(legend.title = element_blank())
+```
+
 
 **3. BENCHMARK MODEL**
 
@@ -243,8 +461,9 @@ autocorr_har_f <- function(df){
   autocorr_har <- data.frame(matrix(data = seq(0,29,1), nrow = 30, ncol = 1))
   names(autocorr) <- c("Lag")   #same as for the AR case. For df, we generate 30 rows, where ultimately the ACFs for each lag will be stored as we apply autocorr_har_f() over a df.
   
-  autocorr_har$autocorr_level = acf(df$RV, lag.max = 29, pl = F)[[1]] %>% as.numeric() 
-  autocorr_har$autocorr_log = acf(df$log_RV, lag.max = 29, pl = F)[[1]] %>% as.numeric()     #same as for the AR case
+  autocorr_har$autocorr_level = acf(df$RV, lag.max = 29, pl = F)[[1]] 
+  
+  autocorr_har$autocorr_log = acf(df$log_RV, lag.max = 29, pl = F)[[1]] 
   
 #Estimating the HAR Models
   
@@ -254,17 +473,19 @@ har_est_log_rv <- HAREstimate(RM = df$log_RV, periods = c(1,5,22))
 
 #Extracting the estimated coefficients and simulating theoretical processes with those coefficients:
 
-har_sim_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
+#I think for each Stock we have 4310 daily observations (perhaps only V does not have this number, so this is the proper len() in the function below)
 
-har_sim_log_rv <- HARSimulate(len=1500, periods = c(1, 5, 22), coef=coef(har_est_log_rv), errorTermSD = 0.001) 
+har_sim_rv <- HARSimulate(len=4310, periods = c(1, 5, 22), coef=coef(har_est_rv), errorTermSD = 0.001) 
+
+har_sim_log_rv <- HARSimulate(len=4310, periods = c(1, 5, 22), coef=coef(har_est_log_rv), errorTermSD = 0.001) 
 
 #ACFs for simulated HAR Models
   
-autocorr_har$autocorr_har_level = acf(har_sim_rv, lag.max = 29) %>% as.numeric()   
+autocorr_har$autocorr_har_level = acf(har_sim_rv@simulation, lag.max = 29)    
 
-autocorr_har$autocorr_har_log = acf(har_sim_log_rv, lag.max = 29) %>% as.numeric()
+autocorr_har$autocorr_har_log = acf(har_sim_log_rv@simulation, lag.max = 29) 
   
-  return(autocorr_har)
+return(autocorr_har)
 }
 
 #the argument autocorr that is taken by the function created above is here defined as being complete_daily_df, our working dataframe, which we group_by() and then apply the function
@@ -272,19 +493,68 @@ autocorr_har$autocorr_har_log = acf(har_sim_log_rv, lag.max = 29) %>% as.numeric
 autocorr_har <- complete_daily_df %>% 
   group_by(Stock) %>% 
   group_modify(~ autocorr_har_f(.x))
+
+#write.csv(autocorr_har, "autocorr_har.csv",row.names = FALSE)
+
+for(i in seq(1, nrow(autocorr_har),by=30)) {
+  
+  c <- autocorr_har$autocorr_har_level[[i]]
+  d <- autocorr_har$autocorr_har_log[[i]]
+  
+    for(j in 0:29){
+    autocorr_har$autocorr_har_level[[i+j]] <- c[1+j]
+    autocorr_har$autocorr_har_log[[i+j]] <- d[1+j]
+    }
+}
+
+colnames(autocorr_har)[2] <- "Lag"
+
+
+#Because the HAR values are in the category "list", while our data is in the category "numeric", we need to convert the HAR data into numeric to plot our graphs
+
+autocorr_har$autocorr_har_level <- as.numeric(unlist(autocorr_har$autocorr_har_level))
+autocorr_har$autocorr_har_log <- as.numeric(unlist(autocorr_har$autocorr_har_log))
+
 ```
 
+Plotting the ACF for our data in Levels and for the implied HAR model in levels
+
+```{r}
+autocorr_har %>%
+  pivot_longer(-(Stock:Lag), names_to = "type",values_to ="data") %>%
+  filter(type %in% c("autocorr_har_level", "autocorr_level")) %>%
+  ggplot(aes(x = Lag, y = data, fill = type)) +
+    geom_col(position="dodge")+
+    #dodge puts columns side by side
+    facet_wrap(~ Stock) +
+    theme_bw() +
+    theme(legend.position="top") +
+    scale_fill_discrete(labels = c("Autocorrelation HAR Level", 
+                                   "Autocorrelation Level")) +
+    theme(legend.title = element_blank())
+```
+Plotting the ACF for our data in LOG and for the implied HAR model in LOG
+
+```{r}
+autocorr_har %>%
+  pivot_longer(-(Stock:Lag), names_to = "type",values_to ="data") %>%
+  filter(type %in% c("autocorr_har_log", "autocorr_log")) %>%
+  ggplot(aes(x = Lag, y = data, fill = type)) +
+    geom_col(position="dodge")+
+    #dodge puts columns side by side
+    facet_wrap(~ Stock) +
+    theme_bw() +
+    theme(legend.position="top") +
+    scale_fill_discrete(labels = c("Autocorrelation HAR log", 
+                                   "Autocorrelation log")) +
+    theme(legend.title = element_blank())
+```
 
 **Rolling Window Estimations**
 
-Below, we will first conduct a rolling window estimation for RV of company AXP and try to generalize the method to the other companies via tidyverse and group_map() or group_modify()
-
-```{r}
-
-```
 Vamos prum código mais limpo pelo amor de deus:
 ```{r}
 full_data <- VariableCreation(df = complete_daily_df)
-riiidge <- RidgeRegressionBIC(x, y)
+
 ```
 

@@ -80,7 +80,7 @@ BICModels <- function(x,y){
   
   #calculating information criteria for ridge DISABLE 
  
-  #   foreach (j = 1:length(ridge$lambda)) %do% { 
+     foreach (j = 1:length(ridge$lambda)) %do% { 
   #   
   #   #degrees of freedom
   #   lambda_diag = ridge$lambda[j] * identity_matrix ##This is Lambda * Identity
@@ -136,7 +136,7 @@ BICModels <- function(x,y){
   final_lasso <- glmnet(x,y, lambda = lambda_lasso, alpha = 1)
   ##Now, the AdaLasso
   tau <- 1 
-  first_step_coef <- coef(final_ridge)[-1] # Since p < T, we use Ridge as the first step model and exclude the intercept.
+  first_step_coef <- coef(final_lasso)[-1] # Since p < T, we use Ridge as the first step model and exclude the intercept.
   penalty_factor <- abs(first_step_coef)**-tau
   adalasso <- glmnet(x,y, penalty.factor = penalty_factor)
   #calculating information criteria for adaLASSO
@@ -188,9 +188,9 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
 
   
   
-  y_var <- data.matrix(scale(df$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
+  y_var <- log(data.matrix(df$RV)) ##GLMNET only works with data matrix, so we need to convert it and separate the variables. Ridge Regression also imposes that the response is centered.
   
-  x_var <- data.matrix(scale(df[,!names(full_data) %in% c('Date', 'RV', 'current_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
+  x_var <- log(data.matrix(df[,!names(df) %in% c('Date', 'RV', 'current_date')])) ##Here, I HAD to remove V, because it's NAN before 2008.
   
   #From full data, we retrieve all rows, and ! indicates the names of columns in full_data that we ignore
   
@@ -225,16 +225,18 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   MSE_elastic_net <-  rep(NA, num_windows)
   MSE_ada_elastic_net <-  rep(NA, num_windows)
   ##Beta matrices
-  betas_ridge <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
+  betas_ridge <- matrix(nrow = dim(x_var)[2], ncol = num_windows  ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_lasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_adalasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   
+  
   for (i in 1:num_windows){
     #i = 1 #test
   
     models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)])
+    
     ridge = models$ridge
     lasso = models$lasso
     adalasso = models$adalasso
@@ -253,6 +255,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     betas_adalasso[,i] = unlist(as.list(adalasso$beta[,]))
     betas_elastic_net[,i] = unlist(as.list(elastic_net$beta[,]))
     betas_ada_elastic_net[,i] = unlist(as.list(ada_elastic_net$beta[,]))
+    
     #predicting
     new_x = as.matrix(t(x_var[(window_size + i),])) ##Now, we get one step ahead values of x, make them into a matrix and use it for prediction!
     new_y = y_var[(window_size + i)]
@@ -261,14 +264,33 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     forecast_adalasso[i] = predict(adalasso, newx =  new_x)
     forecast_elastic_net[i] = predict(elastic_net, newx =  new_x)
     forecast_ada_elastic_net[i] = predict(ada_elastic_net, newx =  new_x)
+   
     
     MSE_ridge[i] = (new_y - forecast_ridge[i])^2
     MSE_lasso[i] = (new_y - forecast_lasso[i])^2
     MSE_adalasso[i] = (new_y - forecast_adalasso[i])^2
     MSE_elastic_net[i] = (new_y - forecast_elastic_net[i])^2
     MSE_ada_elastic_net[i] = (new_y - forecast_ada_elastic_net[i])^2
-    #f_ridge[i] <- predict(ridge, newx = as.matrix(new_x))
+    
   }
+  forecastHAR = HARForecast(RM = y_var, nRoll = num_windows, nAhead = 1)
+  MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
+  mean(MSE_HAR)
+  mean(MSE_ridge)/mean(MSE_HAR)
+  mean(MSE_lasso)/mean(MSE_HAR)
+  mean(MSE_adalasso)/mean(MSE_HAR)
+  mean(MSE_elastic_net)/ mean(MSE_HAR)
+  mean(MSE_ada_elastic_net) / mean(MSE_HAR)
+  
+  dm.test(MSE_HAR, MSE_ridge)
+  dm.test(MSE_HAR, MSE_lasso)
+  dm.test(MSE_HAR, MSE_elastic_net)
+  
+  dm.test(MSE_HAR, MSE_adalasso)
+  
+  dm.test(MSE_HAR, MSE_ada_elastic_net)
+  
+  
  return(2) }
   
   
