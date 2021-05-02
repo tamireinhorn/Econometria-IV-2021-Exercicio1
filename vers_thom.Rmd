@@ -465,5 +465,6 @@ dm.test(MSE_har, MSE_elastic_net)
 dm.test(MSE_har, MSE_ada_elastic_net)
 
 ```
-
+##TODO Write the code to join these MSEs all into a table with the dates (?)
+##TODO Write the code for the regressor frequency. 
 
