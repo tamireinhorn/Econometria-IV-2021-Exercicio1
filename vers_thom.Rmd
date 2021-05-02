@@ -436,4 +436,34 @@ full_data <- VariableCreation(df = complete_daily_df) ##We use this function to 
 complete_ML_set <- RollingWindow(full_data)
 
 ```
+Now, we can extract the objects and calculate MSEs and do the Diebold-Mariano test.
+```{r}
+betas_lasso <-complete_ML_set$betas_lasso 
+betas_ridge <- complete_ML_set$betas_ridge
+betas_adalasso <- complete_ML_set$betas_adalasso
+betas_elastic_net <- complete_ML_set$betas_elastic_net
+betas_ada_elastic_net <- complete_ML_set$betas_ada_elastic_net
+MSE_har <- complete_ML_set$MSE_HAR
+MSE_ridge <- complete_ML_set$MSE_ridge
+MSE_lasso <- complete_ML_set$MSE_lasso
+MSE_adalasso <- complete_ML_set$MSE_adalasso
+MSE_elastic_net <- complete_ML_set$MSE_elastic_net
+MSE_ada_elastic_net <- complete_ML_set$MSE_ada_elastic_net
+cat('The MSE for the benchmark model is' , mean(MSE_har), '\n')
+cat('The MSE for the ridge model relative to the benchmark is' , mean(MSE_ridge)/mean(MSE_har),'and its absolute value is',mean(MSE_ridge), '\n')
+cat('The MSE for the LASSO model relative to the benchmark is' , mean(MSE_lasso)/mean(MSE_har),'and its absolute value is',mean(MSE_lasso),'\n')
+cat('The MSE for the Adaptative Lasso model relative to the benchmark is' , mean(MSE_adalasso)/mean(MSE_har),'and its absolute value is',mean(MSE_adalasso), '\n')
+cat('The MSE for the Elastic Net model relative to the benchmark is' , mean(MSE_elastic_net)/mean(MSE_har),'and its absolute value is',mean(MSE_elastic_net), '\n')
+cat('The MSE for the Adaptative Elastic Net model relative to the benchmark is' , mean(MSE_ada_elastic_net)/mean(MSE_har), 'and its absolute value is',mean(MSE_ada_elastic_net),'\n')
+```
+Now for the Diebold-Mariano test:
+```{r}
+dm.test(MSE_har, MSE_ridge)
+dm.test(MSE_har, MSE_lasso)
+dm.test(MSE_har, MSE_adalasso)
+dm.test(MSE_har, MSE_elastic_net)
+dm.test(MSE_har, MSE_ada_elastic_net)
+
+```
+
 

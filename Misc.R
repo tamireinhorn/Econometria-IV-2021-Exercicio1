@@ -110,7 +110,9 @@ BICModels <- function(x,y, window_size){
   #   
   # }
   #end of information criteria for ridge
-  
+  ##This loop was simply too computationally intensive, so we decided to use the degrees of freedom like the other models.
+  ##Running this loop on smaller intervals (less windows, for instance) yielded results that were not significantly different than the ones produced by this simplification.
+       
   #Simpler ridge:
   yhat = cbind(1,x) %*% coef(ridge)
   resid = y - yhat
@@ -272,10 +274,10 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     MSE_adalasso[i] = (new_y - forecast_adalasso[i])^2
     MSE_elastic_net[i] = (new_y - forecast_elastic_net[i])^2
     MSE_ada_elastic_net[i] = (new_y - forecast_ada_elastic_net[i])^2
-    
+    print(i)
   }
   forecastHAR = HARForecast(RM = y_var, nRoll = num_windows, nAhead = 1)
-  # MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
+  MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
   # mean(MSE_HAR)
   # mean(MSE_ridge)/mean(MSE_HAR)
   # mean(MSE_lasso)/mean(MSE_HAR)
