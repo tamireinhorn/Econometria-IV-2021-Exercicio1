@@ -466,5 +466,77 @@ dm.test(MSE_har, MSE_ada_elastic_net)
 
 ```
 ##TODO Write the code to join these MSEs all into a table with the dates (?)
-##TODO Write the code for the regressor frequency. 
+
+
+Regressor frequency test:
+```{r}
+##First, we create dataframes for every coefficent matrix, transposing them for ease of use
+indep_names <- stock_name %>% setdiff(., "SPY") ##Lists all stocks but SPY
+var_name <- c('month_RV', 'week_RV', 'previous_RV', indep_names)
+betas_ridge_df <- as.data.frame(t(betas_ridge))
+names(betas_ridge_df) <- c(var_name)
+betas_ridge_df[betas_ridge_df != 0] <- 1 
+betas_lasso_df <- as.data.frame(t(betas_lasso))
+names(betas_lasso_df) <- var_name
+betas_lasso_df[betas_lasso_df != 0] <- 1 
+betas_adalasso_df <- as.data.frame(t(betas_adalasso))
+names(betas_adalasso_df) <- var_name
+betas_adalasso_df[betas_adalasso_df != 0] <- 1 
+betas_elastic_net_df <- as.data.frame(t(betas_elastic_net))
+names(betas_elastic_net_df) <- var_name
+betas_elastic_net_df[betas_elastic_net_df != 0] <- 1 
+betas_ada_elastic_net_df <- as.data.frame(t(betas_ada_elastic_net))
+names(betas_ada_elastic_net_df) <- var_name
+betas_ada_elastic_net_df[betas_ada_elastic_net_df != 0] <- 1 
+
+##Now aggregating all models
+betas_aggr <- 1/5 * (betas_ridge_df + betas_lasso_df + betas_adalasso_df + betas_elastic_net_df + betas_ada_elastic_net_df)
+##I want to have a list of all the datas where we applied the rolling window.
+window_size <- 1000
+month <- 22
+days <- dim(full_data)[[1]]
+num_windows <- days - (month - 1)  - window_size 
+##The datas go from the first date in full_data to num_windows.
+applied_data_list <- full_data$Date[1:num_windows]
+betas_aggr$Date <- applied_data_list
+
+```
+Now, to plot the graph of regressor frequency.
+```{r fig.height = 23, fig.width = 10}
+aggr_plot <- melt(betas_aggr ,  id.vars = 'Date', variable.name = 'series')
+ggplot(aggr_plot, aes(Date,value)) + geom_line() + facet_wrap(series ~ ., ncol = 2)
+```
+Something that should be interesting is to plot the number of non zero coefficients per date for all methods that perform variable selection.
+
+```{r}
+lasso_var_num <- as.data.frame(rowSums(betas_lasso_df))
+adalasso_var_num <- as.data.frame(rowSums(betas_adalasso_df))
+elastic_net_var_num <- as.data.frame(rowSums(betas_elastic_net_df))
+ada_elastic_net_var_num <-  as.data.frame(rowSums(betas_elastic_net_df))
+lasso_var_num$Date <- applied_data_list
+
+names(lasso_var_num) <- c('VarNum', 'Date')
+lasso_var_num$Model <- 'LASSO'
+adalasso_var_num$Date <- applied_data_list
+names(adalasso_var_num) <- c('VarNum', 'Date')
+adalasso_var_num$Model <- 'ADALASSO'
+elastic_net_var_num$Date <- applied_data_list
+names(elastic_net_var_num) <- c('VarNum', 'Date')
+elastic_net_var_num$Model <- 'Elastic Net'
+ada_elastic_net_var_num$Date <- applied_data_list
+names(ada_elastic_net_var_num) <- c('VarNum', 'Date')
+ada_elastic_net_var_num$Model <- 'Adaptative Elastic Net'
+total_freq <- bind_rows(lasso_var_num, adalasso_var_num, elastic_net_var_num, ada_elastic_net_var_num)
+
+
+ggplot(total_freq, aes(Date, VarNum)) + geom_line(aes(colour = Model)) + ggtitle('Chosen Variables in All Models') + xlab('Date') + ylab('Variable Number') +scale_color_manual(values = c("red", "black", "blue", "green"))
+
+##The reason we only see 3 models is that Adaptative Elastic Net has same number of regressors as Elastic Net
+##This can be seen via an inner join of the two dfs via VarNum and Date, returning the same number of rows,
+##So every date has the same value for both models!
+
+```
+Now, for the rolling MSE.
+
+
 
