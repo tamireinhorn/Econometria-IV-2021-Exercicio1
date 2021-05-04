@@ -30,10 +30,6 @@ library(glmnet)
 library(maditr)
 library(broom)
 
-library(devtools)
-install_github('gogonzo/runner')
-library(runner)
-library(profvis)
 library(foreach)
 library(forecast)
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
@@ -123,123 +119,7 @@ complete_daily_df <- bind_rows(daily_stock_list, .id = "column_label")
 names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
 ```
 
----
-title: "Exercise 1"
-output: html_notebook
-fig_width: 6 
-fig_height: 4 
----
 
-## **1. LOADING PACKAGES**
-
-```{r}
-
-library(devtools)
-library(fBasics)
-library(glmnet)
-library(dreamerr)
-library(tidyverse)
-library(tidyr)
-library(HARModel)
-library(dplyr)
-library(tsibble)
-library(feasts)
-library(stringr)
-library(lubridate)
-library(anytime)
-library(ggplot2)
-library(ggthemes)
-library(knitr)
-library(kableExtra)
-library(DT)
-library(htmltools)
-library(reshape2) #to be used with tidyverse and gglopt2
-library(ggpubr)
-library(forecast)
-```
-
-## **2. DATA PREPARATION**
-
-The function clean_data will be created to clean the files, and it will be applied in the second chunk of the code, in which we will import the files.
-
-```{r}
-clean_data <- function(ticker) {
-
-  ##In this function, we're going to first convert the Date column to date:
- 
-     ticker$Date <- as.Date(ticker$Date, '%m/%d/%Y')
-  
-  ## Then, we want to restrict it from 2000 onwards
-
-     new_ticker <- filter(ticker, format(ticker$Date, '%Y') >= 2000)
-
-     ##We need all days to contain the same number ofminutes, so we will use the left_join command first ensure that, and also to create NA for all MINUTES for which certain stocks do not have data.
-     
-     minute_list <- sort(unique(new_ticker$Time)) 
-     day_list <- sort(unique(new_ticker$Date))
-     minute_df <- data.frame('Time' = minute_list) ##A minute df is needed for the left_join() to be applied
-     day_df <- data.frame('Date' = day_list) ##A day df is needed for the left_join() to be applied
-     day_minute_df <- left_join(day_df, minute_df, character()) ##A df is created in which all 390 possible minutes were joined into each possible day
-     new_ticker <- left_join(day_minute_df, new_ticker, by = c('Time', 'Date')) ##Then we left join all the informations in the new ticker into the day_minute df, uniformising all dates for all stocks in number of minutes
-     new_ticker$minute_return <- (new_ticker$Close - lag(new_ticker$Close))/ new_ticker$Close ##Return taken on levels: p_t - p_{t-1} / p_{t-1}
-     new_ticker$minute_log_return <- log(new_ticker$Close) - log(lag(new_ticker$Close)) ##Log return: log(p_t) - log(p_{t-1})
-     
-  return(new_ticker)
-}
-```
-
-Given the clean_data() function above, we will now jointly import and clean the data (alternatively, we could have importer everything, then created the cleaning function and then have applied it, using three different chunks). 
-
-
-```{r}
-files_list <- list.files('Data')
-stock_name <- str_remove(files_list, ".txt")
-stock_list <- vector(mode = "list", length = 29) ##Initialize the stock list.
-for (i in 1:length(stock_list)) {
-  stock_df <- data.frame(read_csv(paste('Data/',files_list[i], sep = ""), col_types = cols())) 
-  clean_stock_df <- clean_data(stock_df)
-  stock_list[[i]] <- clean_stock_df[,]
-}
-
-names(stock_list) <- stock_name
-```
-
-A function to compute daily variables of interest will be created, and in a following code it will be applied to our list of stocks. These variables of interest are the realized volatility, sum of daily minute returns and sum of daily volumes traded per minute:
-
-```{r}
-
-#First for AXP, to understand the logic
-#AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
-
-##This logic will be turned into a function that creates daily dataframes for all of the tickers
-
-make_daily_data <- function(clean_ticker){
-  daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
-  #return(daily_ticker)
-}
-```
-
-Now, we apply this function for all tickers, just like before.
-
-```{r}
-daily_stock_list <- vector(mode = 'list', length = 29) ##Initialize the daily stock list.
-
-for (i in 1:length(stock_list)) {
-
-  daily_stock_df <- make_daily_data(stock_list[[i]])
-  daily_stock_list[[i]] <- daily_stock_df[,]
-  
-}
-names(daily_stock_list) <- stock_name
-```
-
-As suggested, we should try creating one giant dataframe in order to use facet_wrap and plot everything at once.
-
-```{r}
-complete_daily_df <- bind_rows(daily_stock_list, .id = "column_label")
-##I just want the name to be Stock:
-names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
-```
 
 ## **3. PLOTS**
 
@@ -247,8 +127,8 @@ names(complete_daily_df)[names(complete_daily_df)== 'column_label'] <- 'Stock'
 
 ```{r fig.height = 30, fig.width = 14}
 ggplot(complete_daily_df, aes(x = RV)) +
-  geom_histogram(aes(y = ..density..),binwidth = 0.0001, color = "darkblue", fill = "lightblue") + 
-  labs(title = "RV Histograms", x = "", y = "")   + xlim(0, 0.01) +  facet_wrap(~ Stock, ncol = 3) +
+  geom_histogram(aes(y = ..density..), color = "darkblue", fill = "lightblue") + 
+  labs(title = "RV Histograms", x = "", y = "")   +  facet_wrap(~ Stock, ncol = 3, scales = 'free') +
   theme_minimal()
 ```
 
@@ -551,10 +431,147 @@ autocorr_har %>%
 ```
 
 **Rolling Window Estimations**
-
-Vamos prum código mais limpo pelo amor de deus:
 ```{r}
-full_data <- VariableCreation(df = complete_daily_df)
+full_data <- VariableCreation(df = complete_daily_df) ##We use this function to create the desired variables.
+complete_ML_set <- RollingWindow(full_data)
 
 ```
+Now, we can extract the objects and calculate MSEs and do the Diebold-Mariano test.
+```{r}
+betas_lasso <-complete_ML_set$betas_lasso 
+betas_ridge <- complete_ML_set$betas_ridge
+betas_adalasso <- complete_ML_set$betas_adalasso
+betas_elastic_net <- complete_ML_set$betas_elastic_net
+betas_ada_elastic_net <- complete_ML_set$betas_ada_elastic_net
+MSE_har <- complete_ML_set$MSE_HAR
+MSE_ridge <- complete_ML_set$MSE_ridge
+MSE_lasso <- complete_ML_set$MSE_lasso
+MSE_adalasso <- complete_ML_set$MSE_adalasso
+MSE_elastic_net <- complete_ML_set$MSE_elastic_net
+MSE_ada_elastic_net <- complete_ML_set$MSE_ada_elastic_net
+cat('The MSE for the benchmark model is' , mean(MSE_har), '\n')
+cat('The MSE for the ridge model relative to the benchmark is' , mean(MSE_ridge)/mean(MSE_har),'and its absolute value is',mean(MSE_ridge), '\n')
+cat('The MSE for the LASSO model relative to the benchmark is' , mean(MSE_lasso)/mean(MSE_har),'and its absolute value is',mean(MSE_lasso),'\n')
+cat('The MSE for the Adaptative Lasso model relative to the benchmark is' , mean(MSE_adalasso)/mean(MSE_har),'and its absolute value is',mean(MSE_adalasso), '\n')
+cat('The MSE for the Elastic Net model relative to the benchmark is' , mean(MSE_elastic_net)/mean(MSE_har),'and its absolute value is',mean(MSE_elastic_net), '\n')
+cat('The MSE for the Adaptative Elastic Net model relative to the benchmark is' , mean(MSE_ada_elastic_net)/mean(MSE_har), 'and its absolute value is',mean(MSE_ada_elastic_net),'\n')
+```
+Now for the Diebold-Mariano test:
+```{r}
+dm.test(MSE_har, MSE_ridge)
+dm.test(MSE_har, MSE_lasso)
+dm.test(MSE_har, MSE_adalasso)
+dm.test(MSE_har, MSE_elastic_net)
+dm.test(MSE_har, MSE_ada_elastic_net)
+
+```
+##TODO Write the code to join these MSEs all into a table with the dates (?)
+
+
+Regressor frequency test:
+```{r}
+##First, we create dataframes for every coefficent matrix, transposing them for ease of use
+indep_names <- stock_name %>% setdiff(., "SPY") ##Lists all stocks but SPY
+var_name <- c('month_RV', 'week_RV', 'previous_RV', indep_names)
+betas_ridge_df <- as.data.frame(t(betas_ridge))
+names(betas_ridge_df) <- c(var_name)
+betas_ridge_df[betas_ridge_df != 0] <- 1 
+betas_lasso_df <- as.data.frame(t(betas_lasso))
+names(betas_lasso_df) <- var_name
+betas_lasso_df[betas_lasso_df != 0] <- 1 
+betas_adalasso_df <- as.data.frame(t(betas_adalasso))
+names(betas_adalasso_df) <- var_name
+betas_adalasso_df[betas_adalasso_df != 0] <- 1 
+betas_elastic_net_df <- as.data.frame(t(betas_elastic_net))
+names(betas_elastic_net_df) <- var_name
+betas_elastic_net_df[betas_elastic_net_df != 0] <- 1 
+betas_ada_elastic_net_df <- as.data.frame(t(betas_ada_elastic_net))
+names(betas_ada_elastic_net_df) <- var_name
+betas_ada_elastic_net_df[betas_ada_elastic_net_df != 0] <- 1 
+
+##Now aggregating all models
+betas_aggr <- 1/5 * (betas_ridge_df + betas_lasso_df + betas_adalasso_df + betas_elastic_net_df + betas_ada_elastic_net_df)
+##I want to have a list of all the datas where we applied the rolling window.
+window_size <- 1000
+month <- 22
+days <- dim(full_data)[[1]]
+num_windows <- days - (month - 1)  - window_size 
+##The datas go from the first date in full_data to num_windows.
+applied_data_list <- full_data$Date[1:num_windows]
+betas_aggr$Date <- applied_data_list
+
+```
+Now, to plot the graph of regressor frequency.
+```{r fig.height = 23, fig.width = 10}
+aggr_plot <- melt(betas_aggr ,  id.vars = 'Date', variable.name = 'series')
+ggplot(aggr_plot, aes(Date,value)) + geom_line() + facet_wrap(series ~ ., ncol = 2)
+```
+Something that should be interesting is to plot the number of non zero coefficients per date for all methods that perform variable selection.
+
+```{r}
+lasso_var_num <- as.data.frame(rowSums(betas_lasso_df))
+adalasso_var_num <- as.data.frame(rowSums(betas_adalasso_df))
+elastic_net_var_num <- as.data.frame(rowSums(betas_elastic_net_df))
+ada_elastic_net_var_num <-  as.data.frame(rowSums(betas_elastic_net_df))
+lasso_var_num$Date <- applied_data_list
+
+names(lasso_var_num) <- c('VarNum', 'Date')
+lasso_var_num$Model <- 'LASSO'
+adalasso_var_num$Date <- applied_data_list
+names(adalasso_var_num) <- c('VarNum', 'Date')
+adalasso_var_num$Model <- 'ADALASSO'
+elastic_net_var_num$Date <- applied_data_list
+names(elastic_net_var_num) <- c('VarNum', 'Date')
+elastic_net_var_num$Model <- 'Elastic Net'
+ada_elastic_net_var_num$Date <- applied_data_list
+names(ada_elastic_net_var_num) <- c('VarNum', 'Date')
+ada_elastic_net_var_num$Model <- 'Adaptative Elastic Net'
+total_freq <- bind_rows(lasso_var_num, adalasso_var_num, elastic_net_var_num, ada_elastic_net_var_num)
+
+
+ggplot(total_freq, aes(Date, VarNum)) + geom_line(aes(colour = Model)) + ggtitle('Chosen Variables in All Models') + xlab('Date') + ylab('Variable Number') +scale_color_manual(values = c("red", "black", "blue", "green"))
+
+##The reason we only see 3 models is that Adaptative Elastic Net has same number of regressors as Elastic Net
+##This can be seen via an inner join of the two dfs via VarNum and Date, returning the same number of rows,
+##So every date has the same value for both models!
+
+```
+Now, for the rolling MSE.
+```{r}
+MSE_lasso_df <- as.data.frame(MSE_lasso)
+names(MSE_lasso_df) <- c('MSE')
+MSE_lasso_df$year <-  format(applied_data_list, '%Y')
+MSE_lasso_df$model <- 'LASSO'
+
+MSE_ridge_df <- as.data.frame(MSE_ridge)
+names(MSE_ridge_df) <- c('MSE')
+MSE_ridge_df$year <- format(applied_data_list, '%Y')
+MSE_ridge_df$model <- 'Ridge'
+
+MSE_adalasso_df <- as.data.frame(MSE_adalasso)
+names(MSE_adalasso_df) <- c('MSE')
+MSE_adalasso_df$year <- format(applied_data_list, '%Y')
+MSE_adalasso_df$model <- 'Adalasso'
+MSE_har_df <- as.data.frame(MSE_har)
+names(MSE_har_df) <- c('MSE')
+MSE_har_df$year <- format(applied_data_list, '%Y')
+MSE_har_df$model <- 'HAR'
+
+MSE_elastic_net_df <- as.data.frame(MSE_elastic_net)
+names(MSE_elastic_net_df) <- c('MSE')
+MSE_elastic_net_df$year <- format(applied_data_list, '%Y')
+MSE_elastic_net_df$model <- 'Elastic Net'
+
+MSE_ada_elastic_net_df <- as.data.frame(MSE_ada_elastic_net)
+names(MSE_ada_elastic_net_df) <- c('MSE')
+MSE_ada_elastic_net_df$year <- format(applied_data_list, '%Y')
+MSE_ada_elastic_net_df$model <- 'Adaptative Elastic Net'
+MSE_df <- bind_rows(MSE_adalasso_df,MSE_ada_elastic_net_df,MSE_har_df, MSE_ridge_df, MSE_lasso_df,
+                      MSE_elastic_net_df)
+
+MSE_aggr <- MSE_df %>% group_by(year, model) %>% summarise_at(vars(-group_cols()), mean)
+ggplot(MSE_aggr, aes(year, MSE, model)) + geom_point(aes(colour = model)) + geom_path(aes(group = model, colour = model)) + scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
+
+
 

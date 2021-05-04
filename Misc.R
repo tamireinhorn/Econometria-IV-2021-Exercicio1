@@ -64,7 +64,7 @@ return(full_data)}
 
 
 ##TODO Augment this function to make it work on ALL possible models. 
-BICModels <- function(x,y){
+BICModels <- function(x,y, window_size){
   ridge <- glmnet(x, y, alpha = 0) ##This makes a ridge model with the function variables. 
   lasso <- glmnet(x,y,alpha = 1) ##This creates a LASSO model with the function variables.
   #initializing the BIC vector
@@ -110,7 +110,9 @@ BICModels <- function(x,y){
   #   
   # }
   #end of information criteria for ridge
-  
+  ##This loop was simply too computationally intensive, so we decided to use the degrees of freedom like the other models.
+  ##Running this loop on smaller intervals (less windows, for instance) yielded results that were not significantly different than the ones produced by this simplification.
+       
   #Simpler ridge:
   yhat = cbind(1,x) %*% coef(ridge)
   resid = y - yhat
@@ -182,7 +184,8 @@ BICModels <- function(x,y){
   
   
   return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso, 'elastic_net' = final_elastic_net, 'ada_elastic_net' = final_ada_elastic_net)
-return(return_list)}
+}
+  return(return_list)}
 
 RollingWindow <- function(df, window_size = 1000, month = 22){
 
@@ -230,12 +233,12 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   betas_adalasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
+  print('we create the objects')
   
-  
-  for (i in 1:num_windows){
+  foreach (i = 1:num_windows) %do% {
     #i = 1 #test
-  
-    models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)])
+    
+    models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)], window_size)
     
     ridge = models$ridge
     lasso = models$lasso
@@ -271,27 +274,30 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     MSE_adalasso[i] = (new_y - forecast_adalasso[i])^2
     MSE_elastic_net[i] = (new_y - forecast_elastic_net[i])^2
     MSE_ada_elastic_net[i] = (new_y - forecast_ada_elastic_net[i])^2
-    
+    print(i)
   }
   forecastHAR = HARForecast(RM = y_var, nRoll = num_windows, nAhead = 1)
   MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
-  mean(MSE_HAR)
-  mean(MSE_ridge)/mean(MSE_HAR)
-  mean(MSE_lasso)/mean(MSE_HAR)
-  mean(MSE_adalasso)/mean(MSE_HAR)
-  mean(MSE_elastic_net)/ mean(MSE_HAR)
-  mean(MSE_ada_elastic_net) / mean(MSE_HAR)
+  # mean(MSE_HAR)
+  # mean(MSE_ridge)/mean(MSE_HAR)
+  # mean(MSE_lasso)/mean(MSE_HAR)
+  # mean(MSE_adalasso)/mean(MSE_HAR)
+  # mean(MSE_elastic_net)/ mean(MSE_HAR)
+  # mean(MSE_ada_elastic_net) / mean(MSE_HAR)
+  # 
+  # dm.test(MSE_HAR, MSE_ridge)
+  # dm.test(MSE_HAR, MSE_lasso)
+  # dm.test(MSE_HAR, MSE_elastic_net)
+  # 
+  # dm.test(MSE_HAR, MSE_adalasso)
+  # 
+  # dm.test(MSE_HAR, MSE_ada_elastic_net)
+  return_list <- list('betas_lasso' = betas_lasso, 'betas_ridge' = betas_ridge, 'betas_adalasso' = betas_adalasso, 
+                      'betas_elastic_net' = betas_elastic_net, 'betas_ada_elastic_net' = betas_ada_elastic_net,
+                      'MSE_HAR' = MSE_HAR, 'MSE_ridge' = MSE_ridge, 'MSE_lasso' = MSE_lasso, 'MSE_adalasso' = MSE_adalasso,
+                      'MSE_elastic_net' = MSE_elastic_net, 'MSE_ada_elastic_net' = MSE_ada_elastic_net)
   
-  dm.test(MSE_HAR, MSE_ridge)
-  dm.test(MSE_HAR, MSE_lasso)
-  dm.test(MSE_HAR, MSE_elastic_net)
-  
-  dm.test(MSE_HAR, MSE_adalasso)
-  
-  dm.test(MSE_HAR, MSE_ada_elastic_net)
-  
-  
- return(2) }
+ return(return_list) }
   
   
   
