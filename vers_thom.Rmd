@@ -537,6 +537,41 @@ ggplot(total_freq, aes(Date, VarNum)) + geom_line(aes(colour = Model)) + ggtitle
 
 ```
 Now, for the rolling MSE.
+```{r}
+MSE_lasso_df <- as.data.frame(MSE_lasso)
+names(MSE_lasso_df) <- c('MSE')
+MSE_lasso_df$year <-  format(applied_data_list, '%Y')
+MSE_lasso_df$model <- 'LASSO'
+
+MSE_ridge_df <- as.data.frame(MSE_ridge)
+names(MSE_ridge_df) <- c('MSE')
+MSE_ridge_df$year <- format(applied_data_list, '%Y')
+MSE_ridge_df$model <- 'Ridge'
+
+MSE_adalasso_df <- as.data.frame(MSE_adalasso)
+names(MSE_adalasso_df) <- c('MSE')
+MSE_adalasso_df$year <- format(applied_data_list, '%Y')
+MSE_adalasso_df$model <- 'Adalasso'
+MSE_har_df <- as.data.frame(MSE_har)
+names(MSE_har_df) <- c('MSE')
+MSE_har_df$year <- format(applied_data_list, '%Y')
+MSE_har_df$model <- 'HAR'
+
+MSE_elastic_net_df <- as.data.frame(MSE_elastic_net)
+names(MSE_elastic_net_df) <- c('MSE')
+MSE_elastic_net_df$year <- format(applied_data_list, '%Y')
+MSE_elastic_net_df$model <- 'Elastic Net'
+
+MSE_ada_elastic_net_df <- as.data.frame(MSE_ada_elastic_net)
+names(MSE_ada_elastic_net_df) <- c('MSE')
+MSE_ada_elastic_net_df$year <- format(applied_data_list, '%Y')
+MSE_ada_elastic_net_df$model <- 'Adaptative Elastic Net'
+MSE_df <- bind_rows(MSE_adalasso_df,MSE_ada_elastic_net_df,MSE_har_df, MSE_ridge_df, MSE_lasso_df,
+                      MSE_elastic_net_df)
+
+MSE_aggr <- MSE_df %>% group_by(year, model) %>% summarise_at(vars(-group_cols()), mean)
+ggplot(MSE_aggr, aes(year, MSE, model)) + geom_point(aes(colour = model)) + geom_path(aes(group = model, colour = model)) + scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
 
 
 
