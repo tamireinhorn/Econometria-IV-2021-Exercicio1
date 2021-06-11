@@ -207,8 +207,8 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   
   #An external loop will define a window starting at i, and through it we will select, in x_var and y_var, observations [i:i+ window_size - 1], and used it as a glmnet() argument
   days <- dim(y_var)[[1]] ##This will give us the length of our dataset
-  num_windows <- days - (month - 1)  - window_size 
-  
+  #num_windows <- days - (month - 1)  - window_size Old before adjustment 
+  num_windows <- days  - window_size +1
   #initializing the objects
   lambda_ridge <- rep(NA, num_windows)
   lambda_lasso <- rep(NA, num_windows)

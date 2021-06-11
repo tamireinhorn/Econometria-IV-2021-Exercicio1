@@ -495,7 +495,8 @@ betas_aggr <- 1/5 * (betas_ridge_df + betas_lasso_df + betas_adalasso_df + betas
 window_size <- 1000
 month <- 22
 days <- dim(full_data)[[1]]
-num_windows <- days - (month - 1)  - window_size 
+#num_windows <- days - (month - 1)  - window_size  Old
+num_windows <- days  - window_size +1
 ##The datas go from the first date in full_data to num_windows.
 applied_data_list <- full_data$Date[1:num_windows]
 betas_aggr$Date <- applied_data_list
