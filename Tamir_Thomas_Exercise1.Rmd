@@ -29,11 +29,15 @@ library(ggpubr)
 library(glmnet)
 library(maditr)
 library(broom)
-
+library(devtools)
 library(foreach)
 library(forecast)
 source('Misc.R')  ##This calls the file with our auxiliary functions, keeping our code clean.
-
+install_github('gabrielrvsc/HDeconometrics')
+library(HDeconometrics)
+library(ipred)
+library(boot)
+library(tseries)
 ```
 
 ## **2. DATA PREPARATION**
@@ -443,18 +447,21 @@ betas_ridge <- complete_ML_set$betas_ridge
 betas_adalasso <- complete_ML_set$betas_adalasso
 betas_elastic_net <- complete_ML_set$betas_elastic_net
 betas_ada_elastic_net <- complete_ML_set$betas_ada_elastic_net
+betas_bagging <- complete_ML_set$betas_bagging
 MSE_har <- complete_ML_set$MSE_HAR
 MSE_ridge <- complete_ML_set$MSE_ridge
 MSE_lasso <- complete_ML_set$MSE_lasso
 MSE_adalasso <- complete_ML_set$MSE_adalasso
 MSE_elastic_net <- complete_ML_set$MSE_elastic_net
 MSE_ada_elastic_net <- complete_ML_set$MSE_ada_elastic_net
+MSE_bagging <- complete_ML_set$MSE_bagging
 cat('The MSE for the benchmark model is' , mean(MSE_har), '\n')
 cat('The MSE for the ridge model relative to the benchmark is' , mean(MSE_ridge)/mean(MSE_har),'and its absolute value is',mean(MSE_ridge), '\n')
 cat('The MSE for the LASSO model relative to the benchmark is' , mean(MSE_lasso)/mean(MSE_har),'and its absolute value is',mean(MSE_lasso),'\n')
 cat('The MSE for the Adaptative Lasso model relative to the benchmark is' , mean(MSE_adalasso)/mean(MSE_har),'and its absolute value is',mean(MSE_adalasso), '\n')
 cat('The MSE for the Elastic Net model relative to the benchmark is' , mean(MSE_elastic_net)/mean(MSE_har),'and its absolute value is',mean(MSE_elastic_net), '\n')
 cat('The MSE for the Adaptative Elastic Net model relative to the benchmark is' , mean(MSE_ada_elastic_net)/mean(MSE_har), 'and its absolute value is',mean(MSE_ada_elastic_net),'\n')
+cat('The MSE for the bagging model relative to the benchmark is' , mean(MSE_bagging)/mean(MSE_har), 'and its absolute value is',mean(MSE_bagging),'\n')
 ```
 Now for the Diebold-Mariano test:
 ```{r}
@@ -463,7 +470,7 @@ dm.test(MSE_har, MSE_lasso)
 dm.test(MSE_har, MSE_adalasso)
 dm.test(MSE_har, MSE_elastic_net)
 dm.test(MSE_har, MSE_ada_elastic_net)
-
+dm.test(MSE_har, MSE_bagging)
 ```
 ##TODO Write the code to join these MSEs all into a table with the dates (?)
 
@@ -572,6 +579,21 @@ MSE_df <- bind_rows(MSE_adalasso_df,MSE_ada_elastic_net_df,MSE_har_df, MSE_ridge
 
 MSE_aggr <- MSE_df %>% group_by(year, model) %>% summarise_at(vars(-group_cols()), mean)
 ggplot(MSE_aggr, aes(year, MSE, model)) + geom_point(aes(colour = model)) + geom_path(aes(group = model, colour = model)) + scale_y_continuous(breaks = scales::pretty_breaks(n = 20))
+```
+
+```{r}
+```
+
+
+```{r}
+bag=boot::tsboot(tseries=tsd,statistic=lynx.fun,R=R,l=l
+               ,sim=sim)
+```
+test
+```{r}
+original=bag$t0
+  bootres=bag$t
+  colnames(bootres)=names(original)
 ```
 
 
