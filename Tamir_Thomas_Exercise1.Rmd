@@ -448,6 +448,7 @@ betas_adalasso <- complete_ML_set$betas_adalasso
 betas_elastic_net <- complete_ML_set$betas_elastic_net
 betas_ada_elastic_net <- complete_ML_set$betas_ada_elastic_net
 betas_bagging <- complete_ML_set$betas_bagging
+betas_csr <- complete_ML_set$betas_csr
 MSE_har <- complete_ML_set$MSE_HAR
 MSE_ridge <- complete_ML_set$MSE_ridge
 MSE_lasso <- complete_ML_set$MSE_lasso
@@ -455,6 +456,7 @@ MSE_adalasso <- complete_ML_set$MSE_adalasso
 MSE_elastic_net <- complete_ML_set$MSE_elastic_net
 MSE_ada_elastic_net <- complete_ML_set$MSE_ada_elastic_net
 MSE_bagging <- complete_ML_set$MSE_bagging
+MSE_csr <- complete_ML_set$MSE_csr
 cat('The MSE for the benchmark model is' , mean(MSE_har), '\n')
 cat('The MSE for the ridge model relative to the benchmark is' , mean(MSE_ridge)/mean(MSE_har),'and its absolute value is',mean(MSE_ridge), '\n')
 cat('The MSE for the LASSO model relative to the benchmark is' , mean(MSE_lasso)/mean(MSE_har),'and its absolute value is',mean(MSE_lasso),'\n')
@@ -462,6 +464,7 @@ cat('The MSE for the Adaptative Lasso model relative to the benchmark is' , mean
 cat('The MSE for the Elastic Net model relative to the benchmark is' , mean(MSE_elastic_net)/mean(MSE_har),'and its absolute value is',mean(MSE_elastic_net), '\n')
 cat('The MSE for the Adaptative Elastic Net model relative to the benchmark is' , mean(MSE_ada_elastic_net)/mean(MSE_har), 'and its absolute value is',mean(MSE_ada_elastic_net),'\n')
 cat('The MSE for the bagging model relative to the benchmark is' , mean(MSE_bagging)/mean(MSE_har), 'and its absolute value is',mean(MSE_bagging),'\n')
+cat('The MSE for the complete subset regression model relative to the benchmark is' , mean(MSE_csr)/mean(MSE_har), 'and its absolute value is',mean(MSE_csr),'\n')
 ```
 Now for the Diebold-Mariano test:
 ```{r}
@@ -471,6 +474,8 @@ dm.test(MSE_har, MSE_adalasso)
 dm.test(MSE_har, MSE_elastic_net)
 dm.test(MSE_har, MSE_ada_elastic_net)
 dm.test(MSE_har, MSE_bagging)
+
+dm.test(MSE_har, MSE_csr)
 ```
 ##TODO Write the code to join these MSEs all into a table with the dates (?)
 

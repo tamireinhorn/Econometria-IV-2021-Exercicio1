@@ -186,14 +186,20 @@ BICModels <- function(x,y, window_size){
   ##Now for Bagging
   
   y_un <- unlist(y)
-  y <- as.numeric(y)
+  y <- as.numeric(y_un)
   x <- data.matrix(x)
   
   num_bootstrap <- 100
   final_bagging <- HDeconometrics::bagging(x,y,fn=NULL,R=num_bootstrap,l=3,sim="fixed", pre.testing = "joint")
   
   
-  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso, 'elastic_net' = final_elastic_net, 'ada_elastic_net' = final_ada_elastic_net, 'bagging'=final_bagging)
+  ##Complete Subset Regression
+  
+  final_csr <- HDeconometrics::csr(x, y, K = min(20, ncol(x)), k = 4, fixed.controls = NULL)
+  
+  
+  
+  return_list <- list('ridge' = final_ridge, 'lasso' = final_lasso, 'adalasso' = final_adalasso, 'elastic_net' = final_elastic_net, 'ada_elastic_net' = final_ada_elastic_net, 'bagging'=final_bagging, 'csr'=final_csr)
 }
   return(return_list)}
 
@@ -232,7 +238,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   forecast_elastic_net <-  rep(NA, num_windows)
   forecast_ada_elastic_net <- rep(NA, num_windows)
   forecast_bagging <- rep(NA, num_windows)
-  
+  forecast_csr <- rep(NA, num_windows)
   ##MSE
   MSE_ridge <-  rep(NA, num_windows)
   MSE_lasso <-  rep(NA, num_windows)
@@ -240,6 +246,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   MSE_elastic_net <-  rep(NA, num_windows)
   MSE_ada_elastic_net <-  rep(NA, num_windows)
   MSE_bagging <-  rep(NA, num_windows)
+  MSE_csr <-  rep(NA, num_windows)
   ##Beta matrices
   betas_ridge <- matrix(nrow = dim(x_var)[2], ncol = num_windows  ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
   betas_lasso <- matrix(nrow = dim(x_var)[2], ncol = num_windows ) #we ignore the intercept, as we are interest in the model`s regressors (there are 31 = dim(x_var)[2]))) 
@@ -247,7 +254,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   betas_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_bagging <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
-  
+  betas_csr <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
  
   
   foreach (i = 1:num_windows) %do% {
@@ -261,6 +268,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     elastic_net = models$elastic_net
     ada_elastic_net = models$ada_elastic_net
     bagging = models$bagging
+    csr = models$csr
     #optimal lambda for each window
     lambda_ridge[i] = ridge$lambda
     lambda_lasso[i] = lasso$lambda
@@ -277,7 +285,8 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     
     bagging_coefficients <- bagging$coefficients[,-1] ##Get the coefficients of the bagging model but without intercept
     betas_bagging[,i] <- t(as.matrix(colMeans(bagging_coefficients))) 
-    
+    csr_coefficients <- csr$coefficients[,-1]
+    betas_csr[,i] <- t(as.matrix(colMeans(csr_coefficients)))
     #predicting
     new_x = as.matrix(t(x_var[(window_size + i),])) ##Now, we get one step ahead values of x, make them into a matrix and use it for prediction!
     new_y = y_var[(window_size + i)]
@@ -288,6 +297,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     forecast_ada_elastic_net[i] = predict(ada_elastic_net, newx =  new_x)
     forecast_bagging[i] = predict(bagging, newdata =  new_x)
     
+    forecast_csr[i] = predict(csr, newdata =  new_x)
     MSE_ridge[i] = (new_y - forecast_ridge[i])^2
     MSE_lasso[i] = (new_y - forecast_lasso[i])^2
     MSE_adalasso[i] = (new_y - forecast_adalasso[i])^2
@@ -295,6 +305,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     MSE_ada_elastic_net[i] = (new_y - forecast_ada_elastic_net[i])^2
     
     MSE_bagging[i] = (new_y - forecast_bagging[i])^2
+    MSE_csr[i] = (new_y - forecast_csr[i])^2
   }
   forecastHAR = HARForecast(RM = y_var, nRoll = num_windows, nAhead = 1)
   MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
@@ -313,9 +324,10 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   # 
   # dm.test(MSE_HAR, MSE_ada_elastic_net)
   return_list <- list('betas_lasso' = betas_lasso, 'betas_ridge' = betas_ridge, 'betas_adalasso' = betas_adalasso, 
-                      'betas_elastic_net' = betas_elastic_net, 'betas_ada_elastic_net' = betas_ada_elastic_net,
+                      'betas_elastic_net' = betas_elastic_net, 'betas_ada_elastic_net' = betas_ada_elastic_net, 'betas_csr' = betas_csr,
+                      'betas_bagging' = betas_bagging,
                       'MSE_HAR' = MSE_HAR, 'MSE_ridge' = MSE_ridge, 'MSE_lasso' = MSE_lasso, 'MSE_adalasso' = MSE_adalasso,
-                      'MSE_elastic_net' = MSE_elastic_net, 'MSE_ada_elastic_net' = MSE_ada_elastic_net, 'MSE_bagging' = MSE_bagging)
+                      'MSE_elastic_net' = MSE_elastic_net, 'MSE_ada_elastic_net' = MSE_ada_elastic_net, 'MSE_bagging' = MSE_bagging,'MSE_csr' = MSE_csr)
   
  return(return_list) }
   
