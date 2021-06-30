@@ -232,8 +232,27 @@ foreach (i = 1:num_windows) %do% {
                    replace = T, # default = T too
                    seed = 1,
                    bootstrap.ts = "moving",
-                   block.size = 365, importance = "impurity"))}
+                   block.size = 365, importance = "impurity", verbose = FALSE))}
+dfm_rf <- data.frame(rf_importance)
+dfm_rf$variable <- colnames(x_var)
+dfm_rf <- melt(dfm_rf, id.vars = "variable",factorAsStrings = TRUE  )
+ggplot(dfm_rf) + geom_point(aes(x = variable.1, y = value, color = variable)) +labs(x = "", y = "") + labs(colour = NULL)
 
+```
+```{r}
+rf_teste<-brnn(x,y,neurons=15, verbose = FALSE)
+
+#Criar função predict para adequar ao caso do rangerts
+custom_predict <- function(X.model, newdata) {
+   predict(X.model, data.frame(newdata))$predictions}
+
+rf_e<-explain(rf_teste,data=X_teste,y=y_teste,predict_function =custom_predict,model_info=list(package="brnn",ver="0.8",type="brnn"))
+
+vi50_rf<-model_parts(explainer = rf_e, 
+                   loss_function = loss_root_mean_square,
+                               B = 50,
+                                N=NULL,
+                            type = "ratio")
 ```
 
 
