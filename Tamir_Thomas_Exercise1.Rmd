@@ -40,6 +40,7 @@ library(boot)
 library(tseries)
 library(brnn)
 library(randomForest)
+library(DALEX)
 install_github("hyanworkspace/rangerts")
 library(rangerts)
 ```
@@ -94,14 +95,9 @@ A function to compute daily variables of interest will be created, and in a foll
 
 ```{r}
 
-#First for AXP, to understand the logic
-#AXP %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) ) ##This works as intended, just creates our daily dataframe. Therefore
-
-##This logic will be turned into a function that creates daily dataframes for all of the tickers
 
 make_daily_data <- function(clean_ticker){
   daily_ticker <- clean_ticker %>% group_by(Date) %>% summarise(daily=sum(minute_log_return,na.rm=T), RV = sum(minute_log_return^2, na.rm = T), VOL = sum(Volume, na.rm = T), log_RV = log(sum(minute_log_return^2, na.rm = T)) )
-  #return(daily_ticker)
 }
 ```
 
@@ -217,43 +213,7 @@ ggplot(dfm_bag) + geom_point(aes(x = variable.1, y = value, color = variable)) +
 
 
 ```
-Random forest variable importance:
 
-```{r}
-rf_importance <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
-foreach (i = 1:num_windows) %do% {
-  y <-  y_var[i:(window_size+i-1)]
-  x <- x_var[i:(window_size+i-1),]
-  z <- data.frame(x)
-  z$y <- y
-  rf_importance[,i] <- importance(rangerts::rangerts(y~ ., data = z,
-                   num.trees = 100,
-                   mtry = floor(sqrt(ncol(z))),
-                   replace = T, # default = T too
-                   seed = 1,
-                   bootstrap.ts = "moving",
-                   block.size = 365, importance = "impurity", verbose = FALSE))}
-dfm_rf <- data.frame(rf_importance)
-dfm_rf$variable <- colnames(x_var)
-dfm_rf <- melt(dfm_rf, id.vars = "variable",factorAsStrings = TRUE  )
-ggplot(dfm_rf) + geom_point(aes(x = variable.1, y = value, color = variable)) +labs(x = "", y = "") + labs(colour = NULL)
-
-```
-```{r}
-rf_teste<-brnn(x,y,neurons=15, verbose = FALSE)
-
-#Criar função predict para adequar ao caso do rangerts
-custom_predict <- function(X.model, newdata) {
-   predict(X.model, data.frame(newdata))$predictions}
-
-rf_e<-explain(rf_teste,data=X_teste,y=y_teste,predict_function =custom_predict,model_info=list(package="brnn",ver="0.8",type="brnn"))
-
-vi50_rf<-model_parts(explainer = rf_e, 
-                   loss_function = loss_root_mean_square,
-                               B = 50,
-                                N=NULL,
-                            type = "ratio")
-```
 
 
 

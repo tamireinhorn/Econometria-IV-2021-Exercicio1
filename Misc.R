@@ -204,7 +204,7 @@ BICModels <- function(x,y, window_size){
   
   #Referências para number of neurons and layers: https://www.tandfonline.com/doi/full/10.1080/14697688.2019.1633014
   
-  final_nnbr <- brnn(x,y,neurons=15, verbose = FALSE) #31 regressors, therefore let's go for 31 neurons
+  final_nnbr <- brnn(x,y,neurons=15) #31 regressors, therefore let's go for 31 neurons
   
   #Random Forest:
   
@@ -281,12 +281,16 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   # betas_ada_elastic_net <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_bagging <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
   betas_csr <- matrix(nrow = dim(x_var)[2], ncol = num_windows )
- 
-  
+  nn_importance <- matrix(nrow = dim(x_var)[2], ncol = 33)
+  rf_importance <- matrix(nrow = dim(x_var)[2], ncol = 33)
+  bagging_importance <- matrix(nrow = dim(x_var)[2], ncol = 33)
+  csr_importance <- matrix(nrow = dim(x_var)[2], ncol = 33)
+  relevant_windows <- seq(1, 3201, 100) #These are the windows for my variable importance calculation. 
   foreach (i = 1:num_windows) %do% {
     #i = 1 #test
-    print(i)
-    models = BICModels(x_var[i:(window_size+i-1),], y_var[i:(window_size+i-1)], window_size)
+    x <- x_var[i:(window_size+i-1),]
+    y <-  y_var[i:(window_size+i-1)]
+    models = BICModels(x,y, window_size)
     
     # ridge = models$ridge
     # lasso = models$lasso
@@ -295,7 +299,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     # ada_elastic_net = models$ada_elastic_net
     bagging = models$bagging
     csr = models$csr
-    brnn = models$nn
+    nn = models$nn
     random_forest = models$rf
     #optimal lambda for each window
     # lambda_ridge[i] = ridge$lambda
@@ -326,7 +330,7 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     forecast_bagging[i] = predict(bagging, newdata =  new_x)
     
     forecast_csr[i] = predict(csr, newdata =  new_x)
-    forecast_nnbr[i] = predict(brnn, newdata =  new_x) #Broken
+    forecast_nnbr[i] = predict(nn, newdata =  new_x) 
     forecast_random_forest[i] = predict(random_forest, data =  new_x)$predictions
     #Broken
     # MSE_ridge[i] = (new_y - forecast_ridge[i])^2
@@ -339,6 +343,49 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
     MSE_csr[i] = (new_y - forecast_csr[i])^2
     MSE_nnbr[i] = (new_y - forecast_nnbr[i])^2
     MSE_random_forest[i] = (new_y - forecast_random_forest[i])^2
+    
+    j <- 1
+    if(i %in% relevant_windows){
+      bagging_e <- DALEX::explain(bagging, data = x, y = y, model_info = list(package = 'HDeconometrics', ver = '0.1.0', type = 'regression'), verbose = FALSE)
+      vi_bagging <- model_parts(bagging_e, loss_function = loss_root_mean_square,
+                                B = 50,
+                                N=NULL,
+                                type = "ratio")
+      median_loss_bagging <- vi_bagging %>% filter(variable != '_baseline_') %>% filter(variable != '_full_model_') %>% group_by(variable) %>% summarise(median = median(dropout_loss))
+      bagging_importance[,j] <- median_loss_bagging$median
+      
+      csr_e <- DALEX::explain(csr, data = x, y = y, model_info = list(package = 'HDeconometrics', ver = '0.1.0', type = 'regression'), verbose = FALSE)
+      vi_csr <- model_parts(csr_e, loss_function = loss_root_mean_square,
+                            B = 50,
+                            N=NULL,
+                            type = "ratio")
+      median_loss_csr <- vi_csr %>% filter(variable != '_baseline_') %>% filter(variable != '_full_model_') %>% group_by(variable) %>% summarise(median = median(dropout_loss))
+      csr_importance[,j] <- median_loss_csr$median
+      
+      rf_predict <- function(X.model, newdata) {
+        predict(X.model, data.frame(newdata))$predictions}
+      rf_e <- DALEX::explain(random_forest, data = x, y = y, model_info = list(package = 'rangerts', ver = '0.0.3', type = 'regression'), predict_function = rf_predict, verbose = FALSE)
+      vi_rf <- model_parts(rf_e,  loss_function = loss_root_mean_square,
+                           B = 50,
+                           N=NULL,
+                           type = "ratio")
+      
+      median_loss_rf <- vi_rf %>% filter(variable != '_baseline_') %>% filter(variable != '_full_model_') %>% group_by(variable) %>% summarise(median = median(dropout_loss))
+      
+      rf_importance[,j] <- median_loss_rf$median
+      
+      nn_e<-DALEX::explain(brnn,data=x,y=y,model_info=list(package="brnn",ver="0.8",type="regression"), verbose = FALSE)
+      
+      vi_nn<-DALEX::model_parts(explainer = nn_e, 
+                                loss_function = loss_root_mean_square,
+                                B = 50,
+                                N=NULL,
+                                type = "ratio")
+      median_loss_nn <- vi_nn %>% filter(variable != '_baseline_') %>% filter(variable != '_full_model_') %>% group_by(variable) %>% summarise(median = median(dropout_loss))
+      nn_importance[,i] <- median_loss_nn$median
+      j <- j + 1
+      
+    } #I only calculate the variable importance in these windows.
   }
   forecastHAR = HARForecast(RM = y_var, nRoll = num_windows, nAhead = 1)
   MSE_HAR = as.numeric(forecastRes(forecastHAR))^2  ##Forecast Res extracts residuals of the HAR forecast, and we get it as a vector.
@@ -364,7 +411,8 @@ RollingWindow <- function(df, window_size = 1000, month = 22){
   # 
   
   return_list <- list('betas_bagging' = betas_bagging, 
-                      'betas_csr' = betas_csr, 'MSE_HAR' = MSE_HAR, 'MSE_bagging' = MSE_bagging, 'MSE_csr' = MSE_csr, 'MSE_nnbr' = MSE_nnbr,'MSE_random_forest' = MSE_random_forest)
+                      'betas_csr' = betas_csr, 'MSE_HAR' = MSE_HAR, 'MSE_bagging' = MSE_bagging, 'MSE_csr' = MSE_csr, 'MSE_nnbr' = MSE_nnbr,'MSE_random_forest' = MSE_random_forest
+                      , 'nn_importance' = nn_importance, 'rf_importance' = rf_importance, 'csr_importance' = csr_importance, 'bagging_importance' = bagging_importance)
   
   
  return(return_list) }
